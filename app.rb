@@ -20,16 +20,15 @@ class EantifonarApp < Sinatra::Base
   ## Sinatra settings
 
   set :default_encoding, 'windows-1250'
-  # set :public_folder, 'http://ebreviar.cz/' # doesn't work
 
   ## define routes
 
   get '*' do
-    forward_request request, :get
+    forward_request request, :get, params
   end
 
   get '*/*' do
-    forward_request request, :get
+    forward_request request, :get, params
   end
 
   post '*' do
@@ -39,16 +38,34 @@ class EantifonarApp < Sinatra::Base
   ## methods
 
   def forward_request(orig_request, method, params={})
-    p orig_request.env
-    request = Typhoeus::Request.new(
-      "breviar.sk/"+orig_request.path,
-      method: orig_request.request_method.downcase.to_sym,
-      headers: { 'User-Agent' => orig_request.env['HTTP_USER_AGENT'] },
-      body: params
-    )
+    method = orig_request.request_method.downcase.to_sym
+
+    # compose and run a request on the shadowed server
+    request_options = {
+      :method => method,
+      :headers => { 'User-Agent' => orig_request.env['HTTP_USER_AGENT'] },
+    }
+    if method == :post then
+      request_options[:body] = params
+    else
+      request_options[:params] = params
+    end
+    request = Typhoeus::Request.new("breviar.sk/"+orig_request.path, request_options)
     request.run
 
-    return modify_page_content(request.response.body)
+    # modify the response and send it to the client
+    response_body = request.response.body
+    if html? response_body then
+      puts "--H #{orig_request.path}"
+      response_body = modify_page_content(response_body)
+    else
+      puts "--S #{orig_request.path}"
+    end
+
+    response_headers = forwarded_params = copy_keys(request.response.headers, ['Date', 'Content-Type'])
+
+    forwarded_response = [request.response.code, response_headers, response_body]
+    return forwarded_response
   end
 
   def modify_page_content(content)
@@ -74,6 +91,24 @@ class EantifonarApp < Sinatra::Base
     end
 
     return doc.to_html
+  end
+
+  # detects if the downloaded content is html
+  # (weak detection sufficient for the web we are working with)
+  def html?(response_body)
+    response_body.start_with? '<!DOCTYPE'
+  end
+
+  # returns a new Hash containing only pairs with a key
+  # included in a given list
+  def copy_keys(hash, keys)
+    r = {}
+    keys.each do |k|
+      if hash.include? k then
+        r[k] = hash[k]
+      end
+    end
+    return r
   end
 
   ## 'main': start the server if ruby file executed directly
