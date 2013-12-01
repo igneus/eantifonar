@@ -1,2 +1,8 @@
 * don't modify links to other mutations of breviar.sk!
 * insert a notice in the pages on how eantifonar works, with a link to "clean" ebreviar.cz
+
+* indexer: if a repo is not specified, make a fresh temporary clone in /tmp
+* indexer: prettier images
+
+
+* (bonus) find where exactly httpclient clashed with Sinatra and eventually send a bug report

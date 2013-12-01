@@ -1,6 +1,6 @@
 # splits a LilyPond music file to many numbered files, one file per score
 
-require 'musicreader.rb'
+require_relative 'musicreader.rb'
 
 class MusicSplitter
 
@@ -16,15 +16,15 @@ class MusicSplitter
 
   def split_file(file_to_be_processed, outputdir=nil, ids=false, verbose=false)
     puts "file: #{file_to_be_processed}" if verbose
-    
+
     m = LilyPondMusic.new file_to_be_processed
     m.scores.each_with_index do |score,i|
-      
+
       # ignore one-line scores - these don't contain music, they only contain variables
       if score.text.chomp.lines.count == 1 then
         next
       end
-      
+
       if ids then
         if score.header['id'] != nil then
           id = score.header['id']
@@ -36,13 +36,13 @@ class MusicSplitter
         id = i+1
       end
       write_to_file = chunk_name file_to_be_processed, id
-      
+
       if outputdir then
         write_to_file = outputdir + "/" + File.basename(write_to_file)
       end
-      
+
       puts "  writing to file #{write_to_file}" if verbose
-      
+
       File.open(write_to_file, "w") do |fw|
         output = yield score
         fw.puts output
@@ -57,7 +57,7 @@ class MusicSplitter
   def split_scores(file_to_be_processed)
     split_file(file_to_be_processed, @setup[:output_dir], @setup[:ids], @setup[:verbose]) do |score|
       scoretext = score.text
-      
+
       if @setup[:remove_headers] then
         puts "  removing headers" if @setup[:verbose]
         ih = scoretext.index("\\header")
@@ -71,13 +71,13 @@ class MusicSplitter
       else
         newtext = scoretext
       end
-      
+
       # remove eventual variable assignment
-      varassignment = /^\s*\w+\s*=\s*\\score/ 
+      varassignment = /^\s*\w+\s*=\s*\\score/
       if newtext =~ varassignment then
         newtext.gsub!(varassignment, '\score')
       end
-      
+
       if @setup[:mode_info] then
         i = newtext.index "\\relative"
         i = newtext.index '{', i if i
@@ -85,8 +85,8 @@ class MusicSplitter
           puts newtext
           raise "Couldn't find, where notes begin, couldn't thus insert mode info (score no. #{score.number})."
         end
-        
-        
+
+
         if score.header['quidbreve'] then
           quid = score.header['quidbreve']
         else
@@ -95,7 +95,7 @@ class MusicSplitter
             quid = quid.split(/\s+/).shift
           end
         end
-        
+
         # Why are both "mode.differentia" and "quid" in quotation marks?
         # Because - even if one of them contains a space, we want to avoid line-break.
         case quid
@@ -113,7 +113,7 @@ class MusicSplitter
           newtext[i+1] = modinfo
         end
       end
-      
+
       if @setup[:one_clef] then
         i = newtext.index "\\relative"
         i = newtext.index '{', i if i
@@ -126,24 +126,24 @@ class MusicSplitter
             i = newtext.index /\s[cdefgab]\d*[\(\)]*/, i+1
             raise "Unable to find enough notes" unless i
           }
-          
+
           newtext[i] = "\n\\override Staff.Clef #'stencil = ##f\n"
         rescue => e
           STDERR.puts "Wasn't able to switch clef off: "+e.message
         end
       end
-      
+
       if @setup[:prepend_text]  then
         puts "  prepending given text" if @setup[:verbose]
         newtext = @setup[:prepend_text] + "\n" + newtext
       end
-      
+
       if @setup[:insert_text] then
         puts "  inserting given text" if @setup[:verbose]
         i = newtext.rindex "}"
         newtext[i-1] = @setup[:insert_text]
       end
-      
+
       newtext
     end
   end
@@ -175,14 +175,14 @@ if $0 == __FILE__ then
     opts.on "-i", "--insert-text TEXT", "Text to be inserted IN the score before the closing brace" do |text|
       setup[:insert_text] = text
     end
-    
+
     # ostatni volby jsou co mozna obecne, ale tato je velice konkretni
     # a vklada po prvnich nekolika notach konkretni kousek kodu.
     # Obecnejsi reseni jsem zatim nevymyslel a ani neni potreba.
     opts.on "-c", "--one-clef", "Clef only on the first line" do
       setup[:one_clef] = true
     end
-    
+
     opts.on "-i", "--ids", "Instead of numbering the produced files, use property 'id' of each score" do
       setup[:ids] = true
     end
@@ -197,7 +197,7 @@ if $0 == __FILE__ then
 
   file_to_be_processed = ARGV[0]
 
-  unless file_to_be_processed 
+  unless file_to_be_processed
     raise "Please, specify LilyPond file which is to be processed."
   end
 
