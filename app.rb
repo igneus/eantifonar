@@ -17,10 +17,6 @@ class EantifonarApp < Sinatra::Base
     @domain = 'localhost:4567'
   end
 
-  ## Sinatra settings
-
-  set :default_encoding, 'windows-1250'
-
   ## define routes
 
   get '*' do
@@ -87,6 +83,13 @@ class EantifonarApp < Sinatra::Base
             break
           end
         end
+      end
+    end
+
+    # tag antiphons
+    doc.css('p > b').each do |b|
+      if b.text.include? 'ant.' then
+        b.parent['class'] = 'eantifonar-antifona'
       end
     end
 
