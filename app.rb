@@ -2,6 +2,9 @@ require 'sinatra/base'
 require 'typhoeus'
 require 'nokogiri'
 
+require 'data_mapper'
+require_relative 'lib/eantifonar/db_setup'
+
 class EantifonarApp < Sinatra::Base
 
   def initialize
@@ -13,16 +16,22 @@ class EantifonarApp < Sinatra::Base
       full = 'http://'+d
       @wrapped_domains[d] = {:full => full, :regex => Regexp.new('^'+full+'/*')}
     end
-
-    @domain = 'localhost:4567'
   end
 
   ## define routes
+
+  # our own public static content
+  get '/eantifonar/chants/:file' do
+    STDERR.puts 'triggered'
+    content = File.read(File.join('public', 'chants', params[:file]))
+    return [200, {'Content-Type' => 'image/png'}, content]
+  end
 
   get '*' do
     forward_request request, :get, params
   end
 
+  # TODO this route is maybe synonym to the previous?
   get '*/*' do
     forward_request request, :get, params
   end
@@ -52,10 +61,8 @@ class EantifonarApp < Sinatra::Base
     # modify the response and send it to the client
     response_body = request.response.body
     if html? response_body then
-      puts "--H #{orig_request.path}"
       response_body = modify_page_content(response_body)
     else
-      puts "--S #{orig_request.path}"
     end
 
     response_headers = forwarded_params = copy_keys(request.response.headers, ['Date', 'Content-Type'])
@@ -87,13 +94,38 @@ class EantifonarApp < Sinatra::Base
     end
 
     # tag antiphons
-    doc.css('p > b').each do |b|
-      if b.text.include? 'ant.' then
-        b.parent['class'] = 'eantifonar-antifona'
+    doc.css('p > b > span.red').each do |span|
+      if span.text.downcase.include? 'ant.' then
+        p = span.parent.parent
+        decorate_antiphon p
       end
     end
 
     return doc.to_html
+  end
+
+
+  def decorate_antiphon(node)
+    node['class'] = 'eantifonar-antifona'
+    ant_text = node.css('b').text # text together with the leading rubric
+
+    # try to get pure antiphon text
+    node.css('b').children.each do |c|
+      if c.is_a? Nokogiri::XML::Text and c.text.strip.size > 0 then
+        ant_text = c.text.strip
+        break
+      end
+    end
+
+    ant_text.gsub!('&nbsp;', ' ')
+
+    chants = Chant.all(:lyrics_cleaned => ant_text)
+    if chants.size > 0 then
+      src = File.join('/eantifonar', 'chants', File.basename(chants.first.image_path))
+      node.add_child "<img src=\"#{src}\">"
+    else
+      STDERR.puts "Chant not found for ant. '#{ant_text}'."
+    end
   end
 
   # detects if the downloaded content is html
