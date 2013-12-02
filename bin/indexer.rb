@@ -6,18 +6,13 @@
 # compiles all chants to separate png images and indexes them in a database.
 
 require 'data_mapper'
-
-db_path = File.expand_path('chants.sqlite3', File.join(File.dirname(__FILE__), '..', 'db'))
-eantifonar_chants_path = File.expand_path('chants', File.join(File.dirname(__FILE__), '..', 'public'))
-
-DataMapper.setup(:default, 'sqlite://'+db_path)
-
-# load db model definition
-require_relative '../lib/eantifonar/chantindex_model'
+require_relative '../lib/eantifonar/db_setup'
 
 # drop all data, refresh tables according to the model
 DataMapper.auto_migrate!
 DataMapper.auto_upgrade!
+
+DataMapper::Model.raise_on_save_failure = true
 
 # prepare scores
 scores_dir = ARGV.shift
@@ -30,6 +25,7 @@ output_dir = File.join(scores_dir, 'eantifonar_tmp')
 unless File.exist? output_dir
   Dir.mkdir output_dir
 end
+`rm -rf #{output_dir}/*`
 
 require_relative '../lib/lilytools/musicreader.rb'
 require_relative '../lib/lilytools/splitscores.rb'
@@ -54,7 +50,8 @@ scores_files.each do |fn|
     music.scores.each do |score|
       counter += 1
       quid = score.header['quid']
-      if quid == nil or not (quid.include?('ant.') or quid.include?('resp.')) then
+      if quid == nil then
+        STDERR.puts "Score with text '#{score.lyrics_readable}' skipped: type unspecified."
         next
       end
 
@@ -85,16 +82,24 @@ scores_files.each do |fn|
       elsif quid.include? 'resp.' then
         type = :resp
       end
+
+      lyrics_cleaned = score.lyrics_readable.gsub(/\s*\*\s*/, ' ')
       chant = Chant.new(
         :chant_type => type,
         :lyrics => score.lyrics_readable,
-        :lyrics_cleaned => score.lyrics_readable, # TODO clean the lyrics
+        :lyrics_cleaned => lyrics_cleaned,
         :image_path => File.join(eantifonar_chants_path, File.basename(oimgpath)),
         :src => score.text
       )
+      unless chant.valid?
+        STDERR.puts "warning: object invalid"
+        p chant
+      end
       chant.save
     end
   rescue
     STDERR.puts "file #{fn}: processing failed"
+    STDERR.puts
+    raise
   end
 end

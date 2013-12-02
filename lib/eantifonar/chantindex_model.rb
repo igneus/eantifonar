@@ -7,11 +7,9 @@ class Chant
   property :id, Serial
 
   property :chant_type, Enum[:ant, :ant_gospel, :resp, :common, :other]
-  property :lyrics, String
-  property :lyrics_cleaned, String # lyrics without additional markup
-  property :image_path, String
+  property :lyrics, String, :length => 255
+  property :lyrics_cleaned, String, :length => 255 # lyrics without additional markup
+  property :image_path, String, :length => 255
 
   property :src, Text # LilyPond source of the score
 end
-
-DataMapper.finalize

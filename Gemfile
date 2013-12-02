@@ -1,4 +1,4 @@
-#ruby=ruby-head
+#ruby=head
 #ruby-gemset=eantifonar
 
 source 'https://rubygems.org'
