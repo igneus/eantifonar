@@ -5,8 +5,11 @@ require 'nokogiri'
 require 'data_mapper'
 require_relative 'lib/eantifonar/db_setup'
 
+require_relative 'lib/eantifonar/decorator'
 
 class EantifonarApp < Sinatra::Base
+
+  include EAntifonar
 
   def initialize
     super()
@@ -17,6 +20,8 @@ class EantifonarApp < Sinatra::Base
       full = 'http://'+d
       @wrapped_domains[d] = {:full => full, :regex => Regexp.new('^'+full+'/*')}
     end
+
+    @decorator = Decorator.new
   end
 
   ## define routes
@@ -76,7 +81,7 @@ class EantifonarApp < Sinatra::Base
 
     doc = Nokogiri::HTML(content)
 
-    # replace links
+    # replace direct internal links so that the user doesn't leave eantifonar accidentally
     doc.css('a').each do |a|
       next unless a['href'].is_a? String
 
@@ -94,39 +99,8 @@ class EantifonarApp < Sinatra::Base
       end
     end
 
-    # tag antiphons
-    doc.css('p > b > span.red').each do |span|
-      if span.text.downcase.include? 'ant.' then
-        p = span.parent.parent
-        decorate_antiphon p
-      end
-    end
-
+    @decorator.decorate doc # insert scores etc.
     return doc.to_html
-  end
-
-
-  def decorate_antiphon(node)
-    node['class'] = 'eantifonar-antifona'
-    ant_text = node.css('b').text # text together with the leading rubric
-
-    # try to get pure antiphon text
-    node.css('b').children.each do |c|
-      if c.is_a? Nokogiri::XML::Text and c.text.strip.size > 0 then
-        ant_text = c.text.strip
-        ant_text.gsub!(/\s+/, ' ') # normalize (regular) whitespace
-        ant_text.gsub!("\u00a0", ' ') # utf-8 non-breaking space - nokogiri obviously converts &nbsp; entity to this character
-        break
-      end
-    end
-
-    chants = Chant.all(:lyrics_cleaned => ant_text)
-    if chants.size > 0 then
-      src = File.join('/eantifonar', 'chants', File.basename(chants.first.image_path))
-      node.add_child "<img src=\"#{src}\">"
-    else
-      STDERR.puts "Chant not found for ant. '#{ant_text}'."
-    end
   end
 
   # detects if the downloaded content is html

@@ -87,7 +87,8 @@ scores_files.each do |fn|
         :lyrics => score.lyrics_readable,
         :lyrics_cleaned => lyrics_cleaned,
         :image_path => File.join(EAntifonar::CONFIG.chants_path, File.basename(oimgpath)),
-        :src => score.text
+        :header => score.header,
+        :src => score.text,
       )
       unless chant.valid?
         STDERR.puts "warning: object invalid"

@@ -11,5 +11,6 @@ class Chant
   property :lyrics_cleaned, String, :length => 255 # lyrics without additional markup
   property :image_path, String, :length => 255
 
+  property :header, Json # score header as json
   property :src, Text # LilyPond source of the score
 end
