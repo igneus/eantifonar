@@ -28,7 +28,6 @@ end
 `rm -rf #{output_dir}/*`
 
 require_relative '../lib/lilytools/musicreader.rb'
-require_relative '../lib/lilytools/splitscores.rb'
 require 'fileutils'
 
 # where to look for scores in the In adiutorium project structure -
@@ -68,10 +67,10 @@ scores_files.each do |fn|
 
       # ... crop the image by ImageMagick
       oimgpath = ofpath.sub(/\.ly$/, '.png')
-      `mogrify -trim #{oimgpath}`
+      `mogrify -trim -transparent white #{oimgpath}`
 
       # ... copy it to the eantifonar data directory
-      FileUtils.mv oimgpath, eantifonar_chants_path
+      FileUtils.mv oimgpath, EAntifonar::CONFIG.chants_path
 
       # make a database entry
       type = :other
@@ -88,7 +87,7 @@ scores_files.each do |fn|
         :chant_type => type,
         :lyrics => score.lyrics_readable,
         :lyrics_cleaned => lyrics_cleaned,
-        :image_path => File.join(eantifonar_chants_path, File.basename(oimgpath)),
+        :image_path => File.join(EAntifonar::CONFIG.chants_path, File.basename(oimgpath)),
         :src => score.text
       )
       unless chant.valid?
@@ -100,6 +99,7 @@ scores_files.each do |fn|
   rescue => ex
     STDERR.puts "#{fn}: processing failed"
     STDERR.puts
+    STDERR.puts ex.message
     STDERR.puts ex.backtrace.join "\n"
     STDERR.puts
   end
