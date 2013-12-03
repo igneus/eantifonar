@@ -9,3 +9,5 @@
 * indexer: save modus and eventually differentia (later we will point the psalms, too)
 
 * (bonus) find where exactly httpclient clashed with Sinatra and eventually send a bug report
+
+* index: chant type and subtype? (Magnificat antiphon is also an antiphon)

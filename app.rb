@@ -5,6 +5,7 @@ require 'nokogiri'
 require 'data_mapper'
 require_relative 'lib/eantifonar/db_setup'
 
+
 class EantifonarApp < Sinatra::Base
 
   def initialize
@@ -113,11 +114,11 @@ class EantifonarApp < Sinatra::Base
     node.css('b').children.each do |c|
       if c.is_a? Nokogiri::XML::Text and c.text.strip.size > 0 then
         ant_text = c.text.strip
+        ant_text.gsub!(/\s+/, ' ') # normalize (regular) whitespace
+        ant_text.gsub!("\u00a0", ' ') # utf-8 non-breaking space - nokogiri obviously converts &nbsp; entity to this character
         break
       end
     end
-
-    ant_text.gsub!('&nbsp;', ' ')
 
     chants = Chant.all(:lyrics_cleaned => ant_text)
     if chants.size > 0 then

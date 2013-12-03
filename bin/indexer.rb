@@ -98,7 +98,7 @@ scores_files.each do |fn|
       chant.save
     end
   rescue => ex
-    STDERR.puts "file #{fn}: processing failed"
+    STDERR.puts "#{fn}: processing failed"
     STDERR.puts
     STDERR.puts ex.backtrace.join "\n"
     STDERR.puts
