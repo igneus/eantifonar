@@ -36,8 +36,7 @@ scores_subdirs = ['.', 'antifony', 'commune', 'sanktoral']
 # for now just a simple example
 scores_files = [ 'kompletar.ly' ]
 
-prepend = '\include "../spolecne.ly"'+"\n"+'\include "../dilyresponsorii.ly"'+"\n" # includes
-prepend += '\header { tagline = "" }'+"\n" # reset tagline for easier image trimming
+prepend = File.read(File.expand_path('eantifonar_common.ly', File.join(File.dirname(__FILE__), '..', 'ly')))
 
 Dir.chdir output_dir # because we will execute programs expecting this
 
