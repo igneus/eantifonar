@@ -6,18 +6,20 @@ module EAntifonar
     # accepts a Nokogiri html document; modifies it directly
     def decorate(doc)
 
+      chants_inserted = {} # keeps track of inserted chants to avoid useless repetition
+
       # tag antiphons
       doc.css('p > b > span.red').each do |span|
         if span.text.downcase.include? 'ant.' then
           p = span.parent.parent
-          decorate_antiphon p
+          decorate_antiphon p, chants_inserted
         end
       end
 
       return doc
     end
 
-    def decorate_antiphon(node)
+    def decorate_antiphon(node, chants_inserted={})
       #node['class'] = 'eantifonar-antifona'
       ant_text = node.css('b').text # text together with the leading rubric
 
@@ -37,8 +39,14 @@ module EAntifonar
       ant['class'] = 'eantifonar-antifona'
       ant.add_child node.dup # the original <p> containing the antiphon text
 
+      if chants_inserted.include? ant_text then
+        # this is a second occurrence of an antiphon - don't repeat the score.
+        return
+      end
+
       if chants.size > 0 then
         chant = chants.first # select one from a possibly larger set
+        chants_inserted[ant_text] = chant
         ant.add_child(chant_annotation(chant))
         src = File.join('/eantifonar', 'chants', File.basename(chant.image_path))
         ant.add_child "<div class=\"eantifonar-score\"><img src=\"#{src}\"></div>"
