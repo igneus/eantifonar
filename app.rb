@@ -1,6 +1,7 @@
 require 'sinatra/base'
 require 'typhoeus'
 require 'nokogiri'
+require 'mime/types'
 
 require 'data_mapper'
 require_relative 'lib/eantifonar/db_setup'
@@ -30,7 +31,8 @@ class EantifonarApp < Sinatra::Base
   get '/eantifonar/chants/:file' do
     STDERR.puts 'triggered'
     content = File.read(File.join('public', 'chants', params[:file]))
-    return [200, {'Content-Type' => 'image/png'}, content]
+    content_type = MIME::Types.type_for(params[:file]).first.to_s # "" if no matching type is found
+    return [200, { 'Content-Type' => content_type }, content]
   end
 
   get '*' do

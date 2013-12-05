@@ -82,6 +82,7 @@ PLATFORMS
 DEPENDENCIES
   datamapper
   dm-sqlite-adapter
+  mime-types
   nokogiri
   sinatra
   typhoeus
