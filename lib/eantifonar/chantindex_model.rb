@@ -6,9 +6,9 @@ class Chant
 
   property :id, Serial
 
-  property :chant_type, Enum[:ant, :ant_gospel, :resp, :common, :other]
-  property :lyrics, String, :length => 255
-  property :lyrics_cleaned, String, :length => 255 # lyrics without additional markup
+  property :chant_type, Enum[:ant, :resp, :common, :other]
+  property :lyrics, String, :length => 800
+  property :lyrics_cleaned, String, :length => 800 # lyrics without additional markup
   property :image_path, String, :length => 255
 
   property :header, Json # score header as json

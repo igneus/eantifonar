@@ -73,28 +73,41 @@ scores_files.each do |fn|
 
       # make a database entry
       type = :other
-      if ['Magnificat', 'Benedictus', 'Nunc dimittis'].find {|k| quid.include? k } then
-        type = :ant_gospel
-      elsif quid.include? 'ant.' then
+      if quid.include? 'ant.' then
         type = :ant
       elsif quid.include? 'resp.' then
         type = :resp
       end
 
-      lyrics_cleaned = score.lyrics_readable.gsub(/\s*\*\s*/, ' ')
-      chant = Chant.new(
-        :chant_type => type,
-        :lyrics => score.lyrics_readable,
-        :lyrics_cleaned => lyrics_cleaned,
-        :image_path => File.join(EAntifonar::CONFIG.chants_path, File.basename(oimgpath)),
-        :header => score.header,
-        :src => score.text,
-      )
-      unless chant.valid?
-        STDERR.puts "warning: object invalid"
-        p chant
+      lyrics_cleaned = score.lyrics_readable.dup
+      lyrics_cleaned.strip!
+      lyrics_cleaned.gsub!(/\s*\*\s*/, ' ') # no asterisks
+
+      # for some scores more variants of the lyrics are indexed:
+      ls = [ lyrics_cleaned ]
+      # most antiphons with alleluia can be chanted without it
+      if type == :ant and score.text.include? '\rubrVelikAleluja' then
+        alleluia_re = /\s*[Aa]leluja[\.!]$/
+        ls << lyrics_cleaned.sub(alleluia_re, '')
       end
-      chant.save
+
+      ls.each do |l|
+        chant = Chant.new(
+          :lyrics_cleaned => l,
+
+          :lyrics => score.lyrics_readable,
+          :chant_type => type,
+          :image_path => File.join(EAntifonar::CONFIG.chants_path, File.basename(oimgpath)),
+          :header => score.header,
+          :src => score.text,
+        )
+
+        unless chant.valid?
+          STDERR.puts "warning: object invalid"
+          p chant
+        end
+        chant.save
+      end
     end
   rescue => ex
     STDERR.puts "#{fn}: processing failed"
