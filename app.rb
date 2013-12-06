@@ -28,11 +28,8 @@ class EantifonarApp < Sinatra::Base
   ## define routes
 
   # our own public static content
-  get '/eantifonar/chants/:file' do
-    STDERR.puts 'triggered'
-    content = File.read(File.join('public', 'chants', params[:file]))
-    content_type = MIME::Types.type_for(params[:file]).first.to_s # "" if no matching type is found
-    return [200, { 'Content-Type' => content_type }, content]
+  get '*.png' do
+    return static_content request.path
   end
 
   get '*' do
@@ -50,6 +47,23 @@ class EantifonarApp < Sinatra::Base
 
   ## methods
 
+  # finds and returns static content;
+  # looks for local content and eventually returns it
+  # (as a valid Sinatra response - the Array variant);
+  # if it is not found, forwards the request to the external site
+  def static_content(request)
+    local_path = File.join('public', request.path)
+    unless File.exist?(local_path) # TODO: unsafe!
+      return forward_request(request, request.method, params)
+    end
+
+    content = File.read(local_path)
+    content_type = MIME::Types.type_for(local_path).first.to_s # "" if no matching type is found
+    return [200, { 'Content-Type' => content_type }, content]
+  end
+
+  # forwards a request to the external site,
+  # returns a valid response as expected by Sinatra (the Array variant)
   def forward_request(orig_request, method, params={})
     method = orig_request.request_method.downcase.to_sym
 
@@ -70,7 +84,6 @@ class EantifonarApp < Sinatra::Base
     response_body = request.response.body
     if html? response_body then
       response_body = modify_page_content(response_body)
-    else
     end
 
     response_headers = forwarded_params = copy_keys(request.response.headers, ['Date', 'Content-Type'])
