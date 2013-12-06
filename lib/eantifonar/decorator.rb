@@ -10,7 +10,7 @@ module EAntifonar
 
       # tag antiphons
       doc.css('p > b > span.red').each do |span|
-        if span.text.downcase.include? 'ant.' then
+        if span.text.downcase.include? 'ant' then
           p = span.parent.parent
           decorate_antiphon p, chants_inserted
         end
@@ -48,7 +48,7 @@ module EAntifonar
         chant = chants.first # select one from a possibly larger set
         chants_inserted[ant_text] = chant
         ant.add_child(chant_annotation(chant))
-        src = File.join('/eantifonar', 'chants', File.basename(chant.image_path))
+        src = File.join('/chants', File.basename(chant.image_path))
         ant.add_child "<div class=\"eantifonar-score\"><img src=\"#{src}\"></div>"
       else
         STDERR.puts "Chant not found for ant. '#{ant_text}'."
