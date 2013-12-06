@@ -1,0 +1,20 @@
+/* overwrite some of the ebreviar's settings -------------------------------- */
+
+body, html {
+  background-color: #cfcfcf; font-family: Bookman, Charis SIL, serif;
+}
+
+#contentRoot {
+	width: 715px; padding: 30px; margin: 0 auto;
+	background-color: white;
+}
+
+input[type='submit'] { font-size: 70%; font-family: Arial, sans-serif; }
+input.button { min-width: 0; }
+
+b { font-weight: normal; } /* is much overused at ebreviar */
+
+
+/* eantifonar proper content ------------------------------------------------- */
+
+.eantifonar-antifona { margin: 10px 0 30px 0; }

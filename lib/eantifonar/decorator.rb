@@ -6,6 +6,8 @@ module EAntifonar
     # accepts a Nokogiri html document; modifies it directly
     def decorate(doc)
 
+      add_css doc
+
       chants_inserted = {} # keeps track of inserted chants to avoid useless repetition
 
       # tag antiphons
@@ -17,6 +19,16 @@ module EAntifonar
       end
 
       return doc
+    end
+
+    # inserts additional stylesheets in the head
+    def add_css(doc)
+      stylesheets = doc.css("head link[type='text/css']")
+      return if stylesheets.empty?
+
+      unless stylesheets.last['href'].include? 'breviar-lista.css'
+        stylesheets.last.after('<link rel="stylesheet" type="text/css" href="/css/eantifonar.css" />')
+      end
     end
 
     def decorate_antiphon(node, chants_inserted={})
