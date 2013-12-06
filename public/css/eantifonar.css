@@ -12,7 +12,8 @@ body, html {
 input[type='submit'] { font-size: 70%; font-family: Arial, sans-serif; }
 input.button { min-width: 0; }
 
-b { font-weight: normal; } /* is much overused at ebreviar */
+b { font-weight: normal; } /* bold is much overused at ebreviar */
+.preces p.partR, p.partV, p.intro { font-weight: normal; }
 
 
 /* eantifonar proper content ------------------------------------------------- */
