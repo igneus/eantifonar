@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 module EAntifonar
 
   # decorates HTML documents - pages from ebreviar.cz - adding chants
@@ -7,6 +9,7 @@ module EAntifonar
     def decorate(doc)
 
       add_css doc
+      add_menu doc
 
       chants_inserted = {} # keeps track of inserted chants to avoid useless repetition
 
@@ -19,16 +22,6 @@ module EAntifonar
       end
 
       return doc
-    end
-
-    # inserts additional stylesheets in the head
-    def add_css(doc)
-      stylesheets = doc.css("head link[type='text/css']")
-      return if stylesheets.empty?
-
-      unless stylesheets.last['href'].include? 'breviar-lista.css'
-        stylesheets.last.after('<link rel="stylesheet" type="text/css" href="/css/eantifonar.css" />')
-      end
     end
 
     def decorate_antiphon(node, chants_inserted={})
@@ -79,6 +72,22 @@ module EAntifonar
       end
 
       return "<div class=\"eantifonar-chant-annotation\">#{an}</div>"
+    end
+
+    # inserts additional stylesheets in the head
+    def add_css(doc)
+      stylesheets = doc.css("head link[type='text/css']")
+      return if stylesheets.empty?
+
+      unless stylesheets.last['href'].include? 'breviar-lista.css'
+        stylesheets.last.after('<link rel="stylesheet" type="text/css" href="/css/eantifonar.css" />')
+      end
+    end
+
+    # adds our menu with links
+    def add_menu(doc)
+      menu_code = File.read(File.expand_path('menu.html', File.join(File.basename(__FILE__), '..', 'data', 'html')))
+      doc.css('body').first.add_child(menu_code)
     end
 
   end # class Decorator

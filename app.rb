@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 require 'sinatra/base'
 require 'typhoeus'
 require 'nokogiri'
@@ -99,6 +101,7 @@ class EantifonarApp < Sinatra::Base
   def modify_page_content(content)
 
     doc = Nokogiri::HTML(content)
+    doc.encoding = 'utf-8'
 
     # replace direct internal links so that the user doesn't leave eantifonar accidentally
     doc.css('a').each do |a|
@@ -119,7 +122,7 @@ class EantifonarApp < Sinatra::Base
     end
 
     @decorator.decorate doc # insert scores etc.
-    return doc.to_html
+    return doc.to_html(:encoding => 'utf-8')
   end
 
   # detects if the downloaded content is html

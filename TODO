@@ -1,5 +1,8 @@
+* fix the 'open door' in static_content
+
 * don't modify links to other mutations of breviar.sk!
-* insert a notice in the pages on how eantifonar works, with a link to "clean" ebreviar.cz
+
+* move hardcoded paths to a shared config object
 
 * indexer:
 	* if a repo is not specified, make a fresh temporary clone in /tmp
@@ -8,13 +11,12 @@
 		- as path relative to project root
 		- as name (title of the master Lilypond file)
 	* by default only reindex files that changed since the last indexing
+	* mogrify at the and, at once
 
 * blacklist and some way to give priority (scores from some files should never be shown in the web antiphonal, e.g.
 	because they don't fit to the gregorian psalm tones; others are a 'second option' and shouldn't be shown by default)
 
 * (bonus) find where exactly httpclient clashed with Sinatra and eventually send a bug report
-
-* index: chant type and subtype? (Magnificat antiphon is also an antiphon)
 
 * logging
 
@@ -23,3 +25,11 @@
 
 * each antiphon could be accompanied by a link to the respective ly source on github and pdf on inadiutorium.cz
 * way to choose antiphon manually (both when a fitting chant is and isn't found automatically)
+
+* make it possible to browse and query the database of scores
+
+* css
+	* alternative layout for small displays
+	* print style (without buttons, background)
+
+* about-page
