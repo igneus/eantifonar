@@ -33,15 +33,17 @@ require 'fileutils'
 # where to look for scores in the In adiutorium project structure -
 scores_subdirs = ['.', 'antifony', 'commune', 'sanktoral']
 
-# for now just a simple example
-scores_files = [ 'kompletar.ly' ]
+# for testing just a small subset
+# scores_files = [ 'kompletar.ly' ]
+
+scores_files = scores_subdirs.collect {|subdir| Dir[File.join(scores_dir, subdir, '*.ly')] }.flatten
+p scores_files
 
 prepend = File.read(File.expand_path('eantifonar_common.ly', File.join(File.dirname(__FILE__), '..', 'ly')))
 
 Dir.chdir output_dir # because we will execute programs expecting this
 
-scores_files.each do |fn|
-  fpath = File.join(scores_dir, fn)
+scores_files.each do |fpath|
   begin
     music = LilyPondMusic.new fpath
     counter = 0
@@ -54,7 +56,7 @@ scores_files.each do |fn|
       end
 
       # create temporary compilable file with just the single score
-      ofn = File.basename(fn).sub(/(\.ly)$/) {|m| '_'+counter.to_s+$1 }
+      ofn = File.basename(fpath).sub(/(\.ly)$/) {|m| '_'+counter.to_s+$1 }
       ofpath = File.join(output_dir, ofn)
       File.open(ofpath, 'w') do |fw|
         fw.puts prepend
@@ -110,7 +112,7 @@ scores_files.each do |fn|
       end
     end
   rescue => ex
-    STDERR.puts "#{fn}: processing failed"
+    STDERR.puts "#{File.basename(fpath)}: processing failed"
     STDERR.puts
     STDERR.puts ex.message
     STDERR.puts ex.backtrace.join "\n"
