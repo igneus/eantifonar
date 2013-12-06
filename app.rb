@@ -29,7 +29,11 @@ class EantifonarApp < Sinatra::Base
 
   # our own public static content
   get '*.png' do
-    return static_content request.path
+    return static_content request
+  end
+
+  get '/' do
+    redirect '/cgi-bin/l.cgi?qt=pdnes&amp;j=cz&amp;c=cz', 302
   end
 
   get '*' do
