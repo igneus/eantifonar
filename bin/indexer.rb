@@ -37,9 +37,8 @@ scores_subdirs = ['.', 'antifony', 'commune', 'sanktoral']
 # scores_files = [ 'kompletar.ly' ]
 
 scores_files = scores_subdirs.collect {|subdir| Dir[File.join(scores_dir, subdir, '*.ly')] }.flatten
-p scores_files
 
-prepend = File.read(File.expand_path('eantifonar_common.ly', File.join(File.dirname(__FILE__), '..', 'ly')))
+prepend = File.read(File.expand_path('eantifonar_common.ly', File.join(File.dirname(__FILE__), '..', 'data', 'ly')))
 
 Dir.chdir output_dir # because we will execute programs expecting this
 
