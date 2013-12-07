@@ -31,26 +31,37 @@ class EantifonarApp < Sinatra::Base
 
   ## define routes
 
+  # setup for templating engines
+  set :haml, :format => :xhtml
+  set :haml, :layout => :_layout
+
   # our own public static content
   get '*.png' do
-    return static_content request
+    static_content request
+  end
+  get '*.css' do
+    static_content request
+  end
+
+  get 'favicon.ico' do
+    # we don't have one and don't want to forward the request to ebreviar.cz
+    raise Sinatra::NotFound
   end
 
   get '/' do
     redirect '/cgi-bin/l.cgi?qt=pdnes&amp;j=cz&amp;c=cz', 302
   end
 
-  get '*' do
-    forward_request request, :get, params
-  end
-
-  # TODO this route is maybe synonym to the previous?
-  get '*/*' do
+  get '/cgi-bin/l.cgi?*' do
     forward_request request, :get, params
   end
 
   post '*' do
     forward_request request, :post, params
+  end
+
+  not_found do
+    haml :error404
   end
 
   ## methods
@@ -62,7 +73,7 @@ class EantifonarApp < Sinatra::Base
   def static_content(request)
     local_path = File.join('public', request.path)
     unless File.exist?(local_path) # TODO: unsafe!
-      return forward_request(request, request.method, params)
+      return forward_request(request, :get, params)
     end
 
     content = File.read(local_path)
@@ -124,7 +135,6 @@ class EantifonarApp < Sinatra::Base
     end
 
     @decorator.decorate doc # insert scores etc.
-    return doc.to_html(:encoding => 'utf-8')
   end
 
   # detects if the downloaded content is html

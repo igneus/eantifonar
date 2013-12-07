@@ -1,6 +1,8 @@
-* fix the 'open door' in static_content
+* don't modify the link to ebreviar in the footer
+* notice in the footer that this is not ebreviar
+* overwrite favicon
 
-* don't modify links to other mutations of breviar.sk!
+* fix the 'open door' in static_content
 
 * move hardcoded paths to a shared config object
 
@@ -26,7 +28,8 @@
 
 * include psalm tones
 * point psalms
-* include Gloria Patri, final blessing, Te Deum
+* include responsories
+* include Deus in adiutorium, final blessing, Te Deum
 * hymn tunes
 
 * each antiphon could be accompanied by a link to the respective ly source on github and pdf on inadiutorium.cz
@@ -37,6 +40,8 @@
 * css
 	* alternative layout for small displays
 	* print style (without buttons, background)
+
+* don't modify links to other mutations of breviar.sk!
 
 * about-page
 * elegant 404 page

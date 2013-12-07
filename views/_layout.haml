@@ -1,0 +1,17 @@
+!!!
+
+%html
+  %head
+    %title
+      E-antifonář
+    %link{:rel => 'stylesheet', :type => 'text/css', :href => 'css/eantifonar.css'}
+
+  %body
+    #contentRoot
+
+      = yield
+
+      %a{:href => '/'}
+        Zpět na hlavní stránku e-antifonáře
+
+    = File.read('data/html/menu.html')
