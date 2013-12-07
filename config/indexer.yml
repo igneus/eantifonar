@@ -1,0 +1,14 @@
+scores_subdirs:
+  - .
+  - antifony
+  - commune
+  - sanktoral
+
+skip_files:
+  - kancionalove_nespory.ly
+  - 'kantikum*.ly'
+  - 'kompletar_*.ly' # alternative settings
+  - kratkeverse.ly
+  - responsoria_nocturna.ly
+  - '*_uprostreddne.ly'
+  - zalm*.ly

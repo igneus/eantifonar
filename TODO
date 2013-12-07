@@ -4,14 +4,19 @@
 
 * move hardcoded paths to a shared config object
 
+* repeat the antiphon if there are more psalms between the first and second repetition
+
 * indexer:
+	* save chant source as name (title of the master Lilypond file)
+	* by default only reindex files that changed since the last indexing
+	* mogrify at the and, at once?
+
+	* check what the external processes (lilypond, mogrify) return!
+		- don't save Chant that doesn't compile
+
 	* if a repo is not specified, make a fresh temporary clone in /tmp
 	* prettier images
-	* save chant source (will help to manually look up a missing - unmatched - chant)
-		- as path relative to project root
-		- as name (title of the master Lilypond file)
-	* by default only reindex files that changed since the last indexing
-	* mogrify at the and, at once
+	* should work correctly with output dir just anywhere, shouldn't it?
 
 * blacklist and some way to give priority (scores from some files should never be shown in the web antiphonal, e.g.
 	because they don't fit to the gregorian psalm tones; others are a 'second option' and shouldn't be shown by default)
@@ -22,6 +27,8 @@
 
 * include psalm tones
 * point psalms
+* include Gloria Patri, final blessing, Te Deum
+* hymn tunes
 
 * each antiphon could be accompanied by a link to the respective ly source on github and pdf on inadiutorium.cz
 * way to choose antiphon manually (both when a fitting chant is and isn't found automatically)
@@ -33,3 +40,4 @@
 	* print style (without buttons, background)
 
 * about-page
+* elegant 404 page

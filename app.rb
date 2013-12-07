@@ -4,8 +4,10 @@ require 'sinatra/base'
 require 'typhoeus'
 require 'nokogiri'
 require 'mime/types'
+require 'yaml'
 
 require 'data_mapper'
+require_relative 'lib/eantifonar/config'
 require_relative 'lib/eantifonar/db_setup'
 
 require_relative 'lib/eantifonar/decorator'

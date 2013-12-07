@@ -6,74 +6,243 @@
 # compiles all chants to separate png images and indexes them in a database.
 
 require 'data_mapper'
-require_relative '../lib/eantifonar/db_setup'
+require 'fileutils'
+require 'optparse'
 
-# drop all data, refresh tables according to the model
-DataMapper.auto_migrate!
-DataMapper.auto_upgrade!
+require_relative '../lib/lilytools/musicreader.rb'
+require_relative '../lib/eantifonar/config'
+require_relative '../lib/eantifonar/db_setup'
 
 DataMapper::Model.raise_on_save_failure = true
 
-# prepare scores
-scores_dir = ARGV.shift
-if scores_dir == nil then
-  STDERR.puts "Program expects an argument: path to a directory with scores."
-  exit 1
-end
+module EAntifonar
 
-output_dir = File.join(scores_dir, 'eantifonar_tmp')
-unless File.exist? output_dir
-  Dir.mkdir output_dir
-end
-`rm -rf #{output_dir}/*`
+  # IndexingStrategy subclasses define a way of saving Chants
+  # to the database (save always? check something before?)
+  class IndexingStrategy
 
-require_relative '../lib/lilytools/musicreader.rb'
-require 'fileutils'
+    # takes a Chant instance and saves it
+    def save_chant(chant)
+      unless chant.valid?
+        STDERR.puts "warning: Chant instance invalid"
+        p chant
+      end
+      chant.save
+    end
 
-# where to look for scores in the In adiutorium project structure -
-scores_subdirs = ['.', 'antifony', 'commune', 'sanktoral']
+    # checks if the chant should be saved
+    def to_save?(chant)
+      true
+    end
+  end
 
-# for testing just a small subset
-# scores_files = [ 'kompletar.ly' ]
+  # if given chant already exists, only save the new
+  # if it is different
+  class UpdateIndexingStrategy < IndexingStrategy
 
-scores_files = scores_subdirs.collect {|subdir| Dir[File.join(scores_dir, subdir, '*.ly')] }.flatten
-
-prepend = File.read(File.expand_path('eantifonar_common.ly', File.join(File.dirname(__FILE__), '..', 'data', 'ly')))
-
-Dir.chdir output_dir # because we will execute programs expecting this
-
-scores_files.each do |fpath|
-  begin
-    music = LilyPondMusic.new fpath
-    counter = 0
-    music.scores.each do |score|
-      counter += 1
-      quid = score.header['quid']
-      if quid == nil then
-        STDERR.puts "Score with text '#{score.lyrics_readable}' skipped: type unspecified."
-        next
+    def save_chant(chant)
+      unless to_save? chant
+        return false
       end
 
-      # create temporary compilable file with just the single score
-      ofn = File.basename(fpath).sub(/(\.ly)$/) {|m| '_'+counter.to_s+$1 }
-      ofpath = File.join(output_dir, ofn)
-      File.open(ofpath, 'w') do |fw|
-        fw.puts prepend
-        fw.puts score.text
+      present = get_existing chant
+
+      # the chant changed. delete the original, save the new
+      if present then
+        destroyed = present.destroy
+        unless destroyed
+          STDERR.puts "Failed to delete old record of chant #{present.src_path}##{present.score_id}"
+          return false
+        end
       end
 
-      # process it by LilyPond,
-      `lilypond --png #{ofpath}`
+      super(chant)
+    end
 
-      # ... crop the image by ImageMagick
-      oimgpath = ofpath.sub(/\.ly$/, '.png')
-      `mogrify -trim -transparent white #{oimgpath}`
+    def to_save?(chant)
+      present = get_existing chant
 
-      # ... copy it to the eantifonar data directory
-      FileUtils.mv oimgpath, EAntifonar::CONFIG.chants_path
+      if present == nil then
+        return true
+      end
 
+      if present.created >= chant.created
+        return false
+      end
+
+      if chant.src == present.src then
+        return false
+      end
+
+      return true
+    end
+
+    private
+
+    # returns already saved chant with the same key data
+    def get_existing(chant)
+      Chant.get(:src_path => chant.src_path, :score_id => chant.score_id, :lyrics_cleaned => chant.lyrics_cleaned)
+    end
+  end
+
+  # drop all data from the database at initialization;
+  # save anything
+  class ReindexIndexingStrategy < IndexingStrategy
+
+    def initialize
+      # drop all data, refresh tables according to the model
+      DataMapper.auto_migrate!
+      DataMapper.auto_upgrade!
+    end
+  end
+
+  # Indexer takes directory structure of the In adiutorium 'chant-base'
+  # and transforms all or some data to database records for E-antifonar
+  class Indexer
+
+    DEFAULT_SETUP = {
+      # where to look for scores in the In adiutorium project structure -
+      :app_root => EAntifonar::CONFIG[:app_root],
+      :config_file => File.join('config', 'indexer.yml'), # relative to app_root
+
+      :scores_subdirs => [],
+      :skip_files => [],
+
+      :scores_dir => nil, # must be set!
+      :files_to_process => [],
+      :output_dir => nil,
+
+      :mode => :update # :update | :reindex
+    }
+
+    def initialize(setup)
+      @setup = DEFAULT_SETUP.dup
+      @setup.update(load_config(File.join(@setup[:app_root], @setup[:config_file])))
+      @setup.update setup
+
+      if @setup[:scores_dir] == nil then
+        raise "Directory with scores not set. Nothing to do."
+      elsif not File.directory? @setup[:scores_dir] then
+        raise "Directory with scores '#{@setup[:scores_dir]}' does not exist."
+      end
+
+      if @setup[:output_dir] == nil then
+        @setup[:output_dir] = File.join(@setup[:scores_dir], 'eantifonar_tmp')
+      end
+
+      if @setup[:files_to_process].empty? then
+        @setup[:files_to_process] = @setup[:scores_subdirs].collect do |subdir|
+          fullpath = File.join(@setup[:scores_dir], subdir, '*.ly')
+          Dir[fullpath].collect {|f| File.join(f.split('/')[-2..-1]) } # we only want 'subdir/file.ly'
+        end.flatten
+
+        # skipping applied only when scanning the whole 'chant-base'
+        skip_files = @setup[:skip_files].collect do |sf|
+          unless File.basename(sf) != sf
+            sf = './' + sf
+          end
+          fullpath = File.join(@setup[:scores_dir], sf)
+          Dir[fullpath].collect {|f| f.sub @setup[:scores_dir], '' }
+        end.flatten
+        p skip_files
+        @setup[:files_to_process] -= skip_files
+      end
+
+      indexing_strategy_name = @setup[:mode].to_s.capitalize+'IndexingStrategy'
+      @indexing_strategy = EAntifonar.const_get(indexing_strategy_name).new
+
+      # definitions prepended to each lilypond chunk to make it standalone compilable
+      @prepend = File.read(File.expand_path('eantifonar_common.ly', File.join(@setup[:app_root], 'data', 'ly')))
+
+      p @setup
+    end
+
+    def index
+      unless File.directory? @setup[:output_dir]
+        Dir.mkdir @setup[:output_dir]
+      end
+
+      Dir.chdir @setup[:output_dir] # because we will execute programs expecting this
+
+      @setup[:files_to_process].each do |fpath|
+
+        fpath_relative = fpath
+        fpath = File.join(@setup[:scores_dir], fpath)
+
+        oldest_indexed_time = Chant.min(:created, :conditions => ['src_path = ?', fpath_relative])
+        if oldest_indexed_time and oldest_indexed_time >= File.mtime(fpath) then
+          STDERR.puts "#{fpath_relative} skipped: not modified"
+          next
+        end
+
+        begin
+          music = LilyPondMusic.new fpath
+          counter = 0
+          music.scores.each do |score|
+            counter += 1
+            quid = score.header['quid']
+            if quid == nil then
+              STDERR.puts "Score with text '#{score.lyrics_readable}' skipped: type unspecified."
+              next
+            end
+
+            score_img_id = score.header['id']
+            if score_img_id == nil then
+              score_img_id = counter.to_s
+              STDERR.puts "Score with text '#{score.lyrics_readable}' has no id. Position in ly file used."
+            end
+
+            ofn = File.basename(fpath).sub(/(\.ly)$/) {|m| '_'+score_img_id+$1 }
+            ofpath = File.join(@setup[:output_dir], ofn)
+            oimgpath = ofpath.sub(/\.ly$/, '.png')
+
+            chants = score_to_chant(
+              score, fpath_relative,
+              File.join(EAntifonar::CONFIG.chants_path, File.basename(oimgpath))
+            )
+
+            unless @indexing_strategy.to_save?(chants.first)
+              STDERR.puts "#{chants.first.src_path}##{chants.first.score_id} already up to date."
+              next
+            end
+
+            # create temporary compilable file with just the single score
+            File.open(ofpath, 'w') do |fw|
+              fw.puts @prepend
+              fw.puts score.text
+            end
+
+            # process it by LilyPond,
+            `lilypond --png #{ofpath}`
+
+            # ... crop the image by ImageMagick
+
+            `mogrify -trim -transparent white #{oimgpath}`
+
+            # ... copy it to the eantifonar data directory
+            FileUtils.mv oimgpath, EAntifonar::CONFIG.chants_path
+
+            chants.each do |chant|
+              @indexing_strategy.save_chant(chant)
+            end
+          end
+        rescue => ex
+          STDERR.puts "#{File.basename(fpath)}: processing failed"
+          STDERR.puts
+          STDERR.puts ex.message
+          STDERR.puts ex.backtrace.join "\n"
+          STDERR.puts
+        end
+      end
+    end
+
+    private
+
+    # make Chant(s) out of the LilyPondScore
+    def score_to_chant(score, src_path, image_path)
       # make a database entry
       type = :other
+      quid = (score.header['quid'] or '')
       if quid.include? 'ant.' then
         type = :ant
       elsif quid.include? 'resp.' then
@@ -86,35 +255,87 @@ scores_files.each do |fpath|
 
       # for some scores more variants of the lyrics are indexed:
       ls = [ lyrics_cleaned ]
-      # most antiphons with alleluia can be chanted without it
+      # antiphons with seasonally appended alleluia
       if type == :ant and score.text.include? '\rubrVelikAleluja' then
         alleluia_re = /\s*[Aa]leluja[\.!]$/
         ls << lyrics_cleaned.sub(alleluia_re, '')
       end
 
-      ls.each do |l|
-        chant = Chant.new(
+      return ls.collect do |l|
+        Chant.new(
           :lyrics_cleaned => l,
 
           :lyrics => score.lyrics_readable,
           :chant_type => type,
-          :image_path => File.join(EAntifonar::CONFIG.chants_path, File.basename(oimgpath)),
+          :image_path => image_path,
           :header => score.header,
           :src => score.text,
-        )
 
-        unless chant.valid?
-          STDERR.puts "warning: object invalid"
-          p chant
-        end
-        chant.save
+          :src_path => src_path,
+          :score_id => score.header['id']
+        )
       end
     end
-  rescue => ex
-    STDERR.puts "#{File.basename(fpath)}: processing failed"
-    STDERR.puts
-    STDERR.puts ex.message
-    STDERR.puts ex.backtrace.join "\n"
-    STDERR.puts
+
+    def load_config(fpath)
+      unless FileTest.file?(fpath)
+        STDERR.puts "Config '#{fpath}' not found."
+        return {}
+      end
+
+      cfg = YAML.load(File.read(fpath))
+      cfg2 = {}
+      cfg.each_pair do |k,v|
+        if k.is_a? String then
+          k = k.to_sym
+        end
+        cfg2[k] = v
+      end
+
+      return cfg2
+    end
+  end # class Indexer
+end # module
+
+
+if $0 == __FILE__ then
+  options = {}
+
+  optparse = OptionParser.new do |opts|
+
+    opts.banner = "indexer.rb [options] SCORES_ROOT_DIR [file1 file2 ...]"
+    opts.separator ""
+    opts.separator "If a list of files is specified, only these will be reindexed."
+    opts.separator ""
+
+    opts.separator "Options"
+
+    opts.on "-R", "--reindex", "Purge database content and reindex completely" do |out|
+      options[:mode] = :reindex
+    end
+
+    opts.on "-h", "--help", "Print this help and exit" do
+      puts opts
+      exit 0
+    end
   end
+
+  optparse.parse!
+
+  options[:scores_dir] = ARGV.shift
+  if ARGV.size > 0 then
+    options[:files_to_process] = ARGV
+  end
+
+  begin
+    indexer = EAntifonar::Indexer.new options
+  rescue => ex
+    raise unless ex.is_a? RuntimeError
+
+    STDERR.puts "Error during start: "+ex.message
+    exit 1
+  end
+
+  indexer.index
 end
+
