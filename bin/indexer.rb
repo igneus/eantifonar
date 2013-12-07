@@ -20,6 +20,8 @@ module EAntifonar
   # IndexingStrategy subclasses define a way of saving Chants
   # to the database (save always? check something before?)
   class IndexingStrategy
+    def initialize(*any)
+    end
 
     # takes a Chant instance and saves it
     def save_chant(chant)
@@ -90,14 +92,23 @@ module EAntifonar
     end
   end
 
-  # drop all data from the database at initialization;
-  # save anything
+  # saves anything; expects no conflicts
   class ReindexIndexingStrategy < IndexingStrategy
 
-    def initialize
-      # drop all data, refresh tables according to the model
-      DataMapper.auto_migrate!
-      DataMapper.auto_upgrade!
+    def initialize(files_to_update=[])
+      if files_to_update.empty?
+        # drop all data, refresh tables according to the model
+        DataMapper.auto_migrate!
+        DataMapper.auto_upgrade!
+      else
+        # drop all data made of the specified files
+        files_to_update.each do |f|
+          destroyed = Chant.all(:src_path => f).destroy
+          unless destroyed
+            raise "Failed to delete database entries coming from file #{f}."
+          end
+        end
+      end
     end
   end
 
@@ -135,6 +146,9 @@ module EAntifonar
         @setup[:output_dir] = File.join(@setup[:scores_dir], 'eantifonar_tmp')
       end
 
+      indexing_strategy_name = @setup[:mode].to_s.capitalize+'IndexingStrategy'
+      @indexing_strategy = EAntifonar.const_get(indexing_strategy_name).new(@setup[:files_to_process])
+
       if @setup[:files_to_process].empty? then
         @setup[:files_to_process] = @setup[:scores_subdirs].collect do |subdir|
           fullpath = File.join(@setup[:scores_dir], subdir, '*.ly')
@@ -149,17 +163,11 @@ module EAntifonar
           fullpath = File.join(@setup[:scores_dir], sf)
           Dir[fullpath].collect {|f| f.sub @setup[:scores_dir], '' }
         end.flatten
-        p skip_files
         @setup[:files_to_process] -= skip_files
       end
 
-      indexing_strategy_name = @setup[:mode].to_s.capitalize+'IndexingStrategy'
-      @indexing_strategy = EAntifonar.const_get(indexing_strategy_name).new
-
       # definitions prepended to each lilypond chunk to make it standalone compilable
       @prepend = File.read(File.expand_path('eantifonar_common.ly', File.join(@setup[:app_root], 'data', 'ly')))
-
-      p @setup
     end
 
     def index
