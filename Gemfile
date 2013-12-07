@@ -1,6 +1,3 @@
-#ruby=head
-#ruby-gemset=eantifonar
-
 source 'https://rubygems.org'
 
 gem 'sinatra'
