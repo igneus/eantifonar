@@ -8,7 +8,6 @@
 
 * indexer:
 	* save chant source as name (title of the master Lilypond file)
-	* by default only reindex files that changed since the last indexing
 	* mogrify at the and, at once?
 
 	* check what the external processes (lilypond, mogrify) return!

@@ -81,7 +81,12 @@ module EAntifonar
 
     # returns already saved chant with the same key data
     def get_existing(chant)
-      Chant.get(:src_path => chant.src_path, :score_id => chant.score_id, :lyrics_cleaned => chant.lyrics_cleaned)
+      chants = Chant.all(:src_path => chant.src_path, :score_id => chant.score_id, :lyrics_cleaned => chant.lyrics_cleaned)
+      if chants.size <= 1 then
+        return chants.first
+      end
+
+      raise "More chants with src_path #{chant.src_path} score_id #{chant.score_id} and lyrics_cleaned '#{chant.lyrics_cleaned}' found!"
     end
   end
 
@@ -169,8 +174,9 @@ module EAntifonar
         fpath_relative = fpath
         fpath = File.join(@setup[:scores_dir], fpath)
 
+        file_modified = File.mtime(fpath)
         oldest_indexed_time = Chant.min(:created, :conditions => ['src_path = ?', fpath_relative])
-        if oldest_indexed_time and oldest_indexed_time >= File.mtime(fpath) then
+        if oldest_indexed_time and oldest_indexed_time >= file_modified then
           STDERR.puts "#{fpath_relative} skipped: not modified"
           next
         end
@@ -190,6 +196,11 @@ module EAntifonar
             if score_img_id == nil then
               score_img_id = counter.to_s
               STDERR.puts "Score with text '#{score.lyrics_readable}' has no id. Position in ly file used."
+            end
+
+            if quid_to_chant_type(quid) == :other then
+              STDERR.puts "Score with text '#{score.lyrics_readable}' skipped: type irrelevant for E-antifonar."
+              next
             end
 
             ofn = File.basename(fpath).sub(/(\.ly)$/) {|m| '_'+score_img_id+$1 }
@@ -241,13 +252,8 @@ module EAntifonar
     # make Chant(s) out of the LilyPondScore
     def score_to_chant(score, src_path, image_path)
       # make a database entry
-      type = :other
       quid = (score.header['quid'] or '')
-      if quid.include? 'ant.' then
-        type = :ant
-      elsif quid.include? 'resp.' then
-        type = :resp
-      end
+      type = quid_to_chant_type quid
 
       lyrics_cleaned = score.lyrics_readable.dup
       lyrics_cleaned.strip!
@@ -274,6 +280,16 @@ module EAntifonar
           :src_path => src_path,
           :score_id => score.header['id']
         )
+      end
+    end
+
+    def quid_to_chant_type(quid)
+      if quid.include? 'ant.' then
+        return :ant
+      elsif quid.include? 'resp.' then
+        return :resp
+      else
+        return :other
       end
     end
 
