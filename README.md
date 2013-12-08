@@ -13,6 +13,7 @@ It forwards all HTTP requests to ebreviar.cz and modifies returned html content 
 
 * ruby 2.0.x (used for development; earlier versions not tested)
 * bundler or otherwise installed gems according to the provided Gemfile
+* SQLite 3
 * lilypond (version compatible with the current In adiutorium music data)
 * ImageMagick
 

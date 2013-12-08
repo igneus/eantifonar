@@ -5,6 +5,7 @@ require 'typhoeus'
 require 'nokogiri'
 require 'mime/types'
 require 'yaml'
+require 'haml'
 
 require 'data_mapper'
 require_relative 'lib/eantifonar/config'
@@ -29,6 +30,8 @@ class EantifonarApp < Sinatra::Base
     @decorator = Decorator.new
   end
 
+  set :haml, :layout => :_layout
+
   ## define routes
 
   # our own public static content
@@ -38,6 +41,10 @@ class EantifonarApp < Sinatra::Base
 
   get '/' do
     redirect '/cgi-bin/l.cgi?qt=pdnes&amp;j=cz&amp;c=cz', 302
+  end
+
+  get '/about.html' do
+    haml :about
   end
 
   get '*' do

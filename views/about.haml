@@ -1,0 +1,58 @@
+%h1 O e-antifonáři
+
+%p{:style => 'font-style: italic;'}
+  Tu samou lehkost, kterou
+  %a{:href => 'http://ebreviar.cz'} e-breviář
+  nabízí pro recitovanou podobu denní modlitby církve,
+  chce e-antifonář nabídnout pro její podobu zpívanou:
+  stačí ve webovém prohlížeči vyťukat
+  %a{:href => 'http://ean.inadiutorium.cz'} ean.inadiutorium.cz
+  a zpívat ...
+
+%h2 Jak to funguje
+
+%p
+  E-antifonář je ve svě podstatě parazit: přes protokol HTTP
+  předává požadavky na zobrazení textů hodinek e-breviáři.
+  Jeho výstup pak analyzuje, doplňuje o hudební prvky a
+  interpolovaný vrací klientovi.
+  V pozadí je malá webová aplikace operující nad databází
+  zhudebněných antifon a responsorií
+  z projektu
+  %a{:href => 'http://www.inadiutorium.cz'} In adiutorium.
+
+%h2 Co to umí
+
+%p
+  Zobrazit texty pro jakoukoli hodinku kteréhokoli dne
+  a k některým antifonám najít a zobrazit noty.
+
+%h2 Co to (zatím) neumí
+
+%ul
+  %li přidat noty k jiným zpěvům než k antifonám
+  %li zobrazit nápěv psalmodie
+  %li značkovat žalmy pro snadný zpěv podle určeného nápěvu
+  %li spolehlivě najít noty pro každou zhudebněnou antifonu
+  %li když se noty nepodaří najít automaticky, nabídnout uživateli "ruční" vyhledání
+  %li přidat odkazy na notové materiály, z nichž jsou zobrazené zpěvy vzaty
+
+%h2 Kdo za to může
+
+%p
+  Ten, který může za web
+  %a{:href => 'http://www.inadiutorium.cz'} In adiutorium.
+
+%h2 Chci, aby to umělo víc
+
+%p
+  Zlepšovací návrhy, které nechcete sami implementovat, patří do
+  %a{:href => 'https://github.com/igneus/eantifonar/issues'} issue trackeru.
+%p
+  Pokud chcete rovnou přispět zdrojovým kódem, můžete na githubu
+  udělat fork
+  %a{:href => 'https://github.com/igneus/eantifonar'} projektu
+  a poslat pull request.
+  Každý, kdo by tak učinil, vyjadřuje tím souhlas s užíváním a šířením svého
+  kódu pod stejnými licenčními podmínkami, jaké se v době zaslání jeho příspěvku
+  vztahují na celý projekt.
