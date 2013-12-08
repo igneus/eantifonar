@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# encoding: UTF-8
 
 require 'sinatra/base'
 require 'typhoeus'
@@ -30,7 +30,10 @@ class EantifonarApp < Sinatra::Base
     @decorator = Decorator.new
   end
 
+  Encoding.default_external = 'UTF-8' if "1.9".respond_to?(:encoding)
+  set :haml, :default_encoding => 'utf-8'
   set :haml, :layout => :_layout
+  set :haml, :format => :xhtml
 
   ## define routes
 
@@ -58,6 +61,10 @@ class EantifonarApp < Sinatra::Base
 
   post '*' do
     forward_request request, :post, params
+  end
+
+  not_found do
+    haml :error404
   end
 
   ## methods

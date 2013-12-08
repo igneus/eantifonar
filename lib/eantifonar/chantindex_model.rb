@@ -1,3 +1,5 @@
+# encoding: UTF-8
+
 # database model of the index of chants
 
 class Chant

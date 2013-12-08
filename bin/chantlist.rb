@@ -1,4 +1,5 @@
 #!/bin/env ruby
+# encoding: UTF-8
 
 # simply prints a sorted list of all chants in the database
 
