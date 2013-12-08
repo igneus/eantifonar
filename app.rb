@@ -13,7 +13,7 @@ require_relative 'lib/eantifonar/db_setup'
 
 require_relative 'lib/eantifonar/decorator'
 
-class EantifonarApp < Sinatra::Base
+class EAntifonarApp < Sinatra::Base
 
   include EAntifonar
 
