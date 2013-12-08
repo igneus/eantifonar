@@ -35,9 +35,8 @@ class EantifonarApp < Sinatra::Base
   set :haml, :layout => :_layout
   set :haml, :format => :xhtml
 
-  ## define routes
+  ## routes for static content
 
-  # our own public static content
   get '*.png' do
     return static_content request
   end
@@ -49,6 +48,30 @@ class EantifonarApp < Sinatra::Base
   get '/about.html' do
     haml :about
   end
+
+  ## browsing database content
+
+  get '/chant/:id' do |id|
+    id = id.to_i
+    p id
+    chant = Chant.get(id)
+    if chant == nil then
+      raise Sinatra::NotFound
+    end
+
+    haml :chant, :locals => { :chant => chant }
+  end
+
+  get '/chantsrc/*' do |path|
+    p path
+    chants = Chant.all(:src_path => path)
+    if chants.empty? then
+      raise Sinatra::NotFound
+    end
+    haml :srcfile, :locals => { :src_path => path, :chants => chants }
+  end
+
+  ## forwarded routes
 
   get '*' do
     forward_request request, :get, params
@@ -62,6 +85,8 @@ class EantifonarApp < Sinatra::Base
   post '*' do
     forward_request request, :post, params
   end
+
+  ## "system" routes
 
   not_found do
     haml :error404

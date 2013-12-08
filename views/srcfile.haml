@@ -1,0 +1,12 @@
+%h1= src_path
+
+%ul
+  - chants.each do |c|
+    %li
+      %a{:href => '/chant/'+c.id.to_s}= '#'+c.id.to_s
+      = c.lyrics_cleaned
+      - if c.chant_type == :ant then
+        = '(antifona)'
+      - elsif c.chant_type == :resp then
+        = '(responsorium)'
+

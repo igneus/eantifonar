@@ -54,7 +54,7 @@ module EAntifonar
         chants_inserted[ant_text] = chant
         ant.add_child(chant_annotation(chant))
         src = File.join('/chants', File.basename(chant.image_path))
-        ant.add_child "<div class=\"eantifonar-score\"><img src=\"#{src}\"></div>"
+        ant.add_child "<div class=\"eantifonar-score\"><a href=\"/chant/#{chant.id}\"><img src=\"#{src}\"></a></div>"
       else
         STDERR.puts "Chant not found for ant. '#{ant_text}'."
       end
