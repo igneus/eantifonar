@@ -10,6 +10,7 @@ module EAntifonar
 
       add_css doc
       add_menu doc
+      add_footer_notice doc
 
       chants_inserted = {} # keeps track of inserted chants to avoid useless repetition
 
@@ -88,6 +89,15 @@ module EAntifonar
     def add_menu(doc)
       menu_code = File.read(File.expand_path('menu.html', File.join(File.basename(__FILE__), '..', 'data', 'html')))
       doc.css('body').first.add_child(menu_code)
+    end
+
+    def add_footer_notice(doc)
+      doc.css('p.patka').last.after('<p class="patka">
+        Nenacházíte se na e-breviáři, ale na e-antifonáři,
+        který z e-breviáře stahuje texty a modifikuje je.
+        Byl upraven styl stažené stránky a k některým textům vloženy noty.
+        Za e-antifonář může <a href="mailto:jkb.pavlik@gmail.com">Jakub Pavlík</a>.
+        </p>')
     end
 
   end # class Decorator

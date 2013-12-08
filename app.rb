@@ -147,6 +147,7 @@ class EantifonarApp < Sinatra::Base
     # replace direct internal links so that the user doesn't leave eantifonar accidentally
     doc.css('a').each do |a|
       next unless a['href'].is_a? String
+      next if a.parent['class'] == 'patka'
 
       if a['href'].start_with?('http://') then
         puts "examining link #{a['href']}"

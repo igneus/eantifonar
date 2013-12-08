@@ -1,5 +1,3 @@
-* don't modify the link to ebreviar in the footer
-* notice in the footer that this is not ebreviar
 * overwrite favicon
 
 * fix the 'open door' in static_content
@@ -32,7 +30,7 @@
 * include Deus in adiutorium, final blessing, Te Deum
 * hymn tunes
 
-* each antiphon could be accompanied by a link to the respective ly source on github and pdf on inadiutorium.cz
+* each antiphon could be accompanied by a link to the pdf on inadiutorium.cz
 * way to choose antiphon manually (both when a fitting chant is and isn't found automatically)
 
 * make it possible to browse and query the database of scores
@@ -42,5 +40,3 @@
 	* print style (without buttons, background)
 
 * don't modify links to other mutations of breviar.sk!
-
-* elegant 404 page
