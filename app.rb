@@ -51,6 +51,13 @@ class EantifonarApp < Sinatra::Base
 
   ## browsing database content
 
+  get '/chant' do
+    haml :'chant.list', :locals => {
+      :title => 'Všechny zpěvy',
+      :chants => Chant.all(:order => [:lyrics_cleaned.asc])
+    }
+  end
+
   get '/chant/:id' do |id|
     id = id.to_i
     p id
@@ -64,11 +71,11 @@ class EantifonarApp < Sinatra::Base
 
   get '/chantsrc/*' do |path|
     p path
-    chants = Chant.all(:src_path => path)
+    chants = Chant.all(:src_path => path, :order => [:id.asc])
     if chants.empty? then
       raise Sinatra::NotFound
     end
-    haml :srcfile, :locals => { :src_path => path, :chants => chants }
+    haml :'chant.list', :locals => { :title => path, :chants => chants }
   end
 
   ## forwarded routes

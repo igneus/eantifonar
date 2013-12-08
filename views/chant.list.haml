@@ -1,4 +1,4 @@
-%h1= src_path
+%h1= title
 
 %ul
   - chants.each do |c|
@@ -10,3 +10,5 @@
       - elsif c.chant_type == :resp then
         = '(responsorium)'
 
+%p
+  (#{chants.size} položek)
