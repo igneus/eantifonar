@@ -4,11 +4,9 @@
 
 * move hardcoded paths to a shared config object
 
-* repeat the antiphon if there are more psalms between the first and second repetition
-
 * indexer:
 	* save chant source as name (title of the master Lilypond file)
-	* mogrify at the and, at once?
+	* mogrify at the end, at once?
 
 	* check what the external processes (lilypond, mogrify) return!
 		- don't save Chant that doesn't compile
@@ -38,5 +36,7 @@
 * css
 	* alternative layout for small displays
 	* print style (without buttons, background)
+
+* some pretty back-to-the-front-page link for the inner pages
 
 * don't modify links to other mutations of breviar.sk!

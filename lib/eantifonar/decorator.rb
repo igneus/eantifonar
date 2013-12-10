@@ -45,8 +45,9 @@ module EAntifonar
       ant['class'] = 'eantifonar-antifona'
       ant.add_child node.dup # the original <p> containing the antiphon text
 
-      if chants_inserted.include? ant_text then
-        # this is a second occurrence of an antiphon - don't repeat the score.
+      if chants_inserted.include? ant_text and
+          not (node.previous_element['class'] == 'psalm' and node.previous_element.previous_element['class'] == 'psalm') then
+        # this is a second occurrence of an antiphon for a single psalm - don't repeat the score.
         return
       end
 
