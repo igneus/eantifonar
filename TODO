@@ -1,14 +1,10 @@
 * caching
 
-* overwrite favicon
-
 * meaningful title
 
 * fix the 'open door' in static_content
 
 * move hardcoded paths to a shared config object
-
-* solve the frequent "internal server errors" in the production environment
 
 * indexer:
 	* lyrics for searching should be downcased and stripped of interpunction
