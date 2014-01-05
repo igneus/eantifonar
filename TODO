@@ -1,12 +1,19 @@
+* caching
+
 * overwrite favicon
+
+* meaningful title
 
 * fix the 'open door' in static_content
 
 * move hardcoded paths to a shared config object
 
+* solve the frequent "internal server errors" in the production environment
+
 * indexer:
-	* save chant source as name (title of the master Lilypond file)
-	* mogrify at the end, at once?
+	* lyrics for searching should be downcased and stripped of interpunction
+	* chants with modified lyrics (often because of small rhythmical change) should have the original text in some header field; use this in the index
+	* save chant source as name (title of the Lilypond (master-)file)
 
 	* check what the external processes (lilypond, mogrify) return!
 		- don't save Chant that doesn't compile
@@ -32,6 +39,7 @@
 * way to choose antiphon manually (both when a fitting chant is and isn't found automatically)
 
 * make it possible to browse and query the database of scores
+* an API to access the contents of the database?
 
 * css
 	* alternative layout for small displays
@@ -40,3 +48,5 @@
 * some pretty back-to-the-front-page link for the inner pages
 
 * don't modify links to other mutations of breviar.sk!
+
+* cron task pulling changes from github and reindexing changed files
