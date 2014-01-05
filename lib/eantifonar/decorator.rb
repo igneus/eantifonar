@@ -58,7 +58,7 @@ module EAntifonar
         src = File.join('/chants', File.basename(chant.image_path))
         ant.add_child "<div class=\"eantifonar-score\"><a href=\"/chant/#{chant.id}\"><img src=\"#{src}\"></a></div>"
       else
-        STDERR.puts "Chant not found for ant. '#{ant_text}'."
+        $stderr.puts "Chant not found for ant. '#{ant_text}'."
       end
 
       node.swap ant
