@@ -41,6 +41,10 @@ class EAntifonarApp < Sinatra::Base
     return static_content request
   end
 
+  get '*.ico' do
+    return static_content request
+  end
+
   get '/' do
     redirect '/cgi-bin/l.cgi?qt=pdnes&amp;j=cz&amp;c=cz', 302
   end
