@@ -20,6 +20,9 @@
 	* prettier images
 	* should work correctly with output dir just anywhere, shouldn't it?
 
+* database listing:
+	* preserve filter while browsing between list pages
+
 * blacklist and some way to give priority (scores from some files should never be shown in the web antiphonal, e.g.
 	because they don't fit to the gregorian psalm tones; others are a 'second option' and shouldn't be shown by default)
 
