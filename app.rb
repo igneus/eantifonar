@@ -126,7 +126,11 @@ class EAntifonarApp < Sinatra::Base
       filter[:chant_type] = types if types.size > 0
       filter[:src_path] = params[:src_path] if params[:src_path].is_a? String and params[:src_path] != ''
 
-      query.update({ :lyrics_cleaned.like => filter[:text] }) if filter.has_key? :text
+      if filter.has_key? :text then
+        filter[:text].split(' ').each do |chunk|
+          query.update({ :lyrics_cleaned.like => "%#{chunk}%" })
+        end
+      end
       [:chant_type, :src_path].each do |field|
         query.update({ field => filter[field] }) if filter.has_key? field
       end
@@ -134,7 +138,11 @@ class EAntifonarApp < Sinatra::Base
       STDERR.puts filter.inspect
 
       # values to generate the form
-      filter[:text] = '' unless filter.has_key? :text
+      unless filter.has_key? :text
+        filter[:text] = ''
+      else
+        filter[:text] = params[:text]
+      end
       filter[:src_path] = '' unless filter.has_key? :src_path
       filter[:chant_type] = [] unless filter.has_key? :chant_type
     end
