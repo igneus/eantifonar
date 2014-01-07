@@ -12,3 +12,9 @@
 
 %p
   (#{chants.size} položek)
+
+.pager
+  Strana:
+  - 1.upto(pages) do |p|
+    %a{:href => "/chant?page=#{p}"}<
+      = p

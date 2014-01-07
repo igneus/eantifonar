@@ -56,9 +56,25 @@ class EAntifonarApp < Sinatra::Base
   ## browsing database content
 
   get '/chant' do
+    pieces = Chant.count
+    pieces_per_page = 50
+    pages = (pieces.to_f / pieces_per_page).ceil
+
+    page = params[:page] or 1
+    page = page.to_i
+    page = 1 unless page > 0
+
     haml :'chant.list', :locals => {
       :title => 'Všechny zpěvy',
-      :chants => Chant.all(:order => [:lyrics_cleaned.asc])
+      :chants => Chant.all(
+        :order => [:lyrics_cleaned.asc],
+        :limit => pieces_per_page,
+
+        # page 0 doesn't make sense, so we add 1 in the view
+        # and substract it here to make pages start with 1 in the front-end
+        :offset => (page - 1) * pieces_per_page
+      ),
+      :pages => pages
     }
   end
 
