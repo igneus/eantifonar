@@ -134,18 +134,18 @@ class EAntifonarApp < Sinatra::Base
       [:chant_type, :src_path].each do |field|
         query.update({ field => filter[field] }) if filter.has_key? field
       end
-
-      STDERR.puts filter.inspect
-
-      # values to generate the form
-      unless filter.has_key? :text
-        filter[:text] = ''
-      else
-        filter[:text] = params[:text]
-      end
-      filter[:src_path] = '' unless filter.has_key? :src_path
-      filter[:chant_type] = [] unless filter.has_key? :chant_type
     end
+
+    # values to generate the form
+    unless filter.has_key? :text
+      filter[:text] = ''
+    else
+      filter[:text] = params[:text]
+    end
+    filter[:src_path] = '' unless filter[:src_path]
+    filter[:chant_type] = [] unless filter[:chant_type]
+
+    STDERR.puts filter.inspect
 
     pieces = Chant.count(query) # total size
     pages = (pieces.to_f / pieces_per_page).ceil
