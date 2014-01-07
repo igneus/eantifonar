@@ -1,5 +1,7 @@
 * caching
 
+* bug in indexing of id-less scores (see what happens with the whole day of Epiphany)
+
 * meaningful title
 
 * fix the 'open door' in static_content
