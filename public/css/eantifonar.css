@@ -29,7 +29,7 @@ b { font-weight: normal; } /* bold is much overused at ebreviar */
 	position: fixed; top: 0; right: 0;
 }
 #eantifonar-menu .content {
-  width: 400px; height: 100px; position: absolute; left: 0; top: 20px; display: none;
+  width: 400px; height: 40px; position: absolute; left: 0; top: 20px; display: none;
   padding-top: 20px;
   background-color: black; color: white; vertical-align: middle;
 }
