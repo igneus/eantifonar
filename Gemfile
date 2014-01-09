@@ -12,6 +12,8 @@ gem 'datamapper'
 gem 'dm-sqlite-adapter'
 
 group :development do
+  gem 'rspec'
+
   gem 'capistrano', '~> 3.0.1'
   gem 'capistrano-bundler'
   gem 'capistrano-rvm'

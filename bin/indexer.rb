@@ -131,7 +131,7 @@ module EAntifonar
       :mode => :update # :update | :reindex
     }
 
-    def initialize(setup, logger)
+    def initialize(setup={}, logger=Log4r::Logger.new('default'))
       @logger = logger
 
       @setup = DEFAULT_SETUP.dup
@@ -251,6 +251,17 @@ module EAntifonar
       end
     end
 
+    # returns a unique file name for a score;
+    # fpath is path to the file where the score originally resided
+    def score_unique_img_fname(fpath, score)
+      score_img_id = score.header['id']
+      if score_img_id == nil or score_img_id == '' then
+        score_img_id = score.number.to_s
+        @logger.warn "Score with text '#{score.lyrics_readable}' has no id. Position in ly file (#{score_img_id}) used."
+      end
+      return File.basename(fpath).sub(/(\.ly)$/) {|m| '_'+score_img_id+$1 }
+    end
+
     private
 
     # make Chant(s) out of the LilyPondScore
@@ -295,17 +306,6 @@ module EAntifonar
       else
         return :other
       end
-    end
-
-    # returns a unique file name for a score;
-    # fpath is path to the file where the score originally resided
-    def score_unique_img_fname(fpath, score)
-      score_img_id = score.header['id']
-      if score_img_id == nil or score == '' then
-        score_img_id = score.number.to_s
-        @logger.warn "Score with text '#{score.lyrics_readable}' has no id. Position in ly file (#{score_img_id}) used."
-      end
-      return File.basename(fpath).sub(/(\.ly)$/) {|m| '_'+score_img_id+$1 }
     end
 
     def load_config(fpath)
