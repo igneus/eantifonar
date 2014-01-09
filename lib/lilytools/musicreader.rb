@@ -1,17 +1,13 @@
 class LilyPondScore
   def initialize(text, srcfile=nil, number=nil)
     @text = text
-    if !@number then
-      @number = LilyPondScore.autonum
-    else
-      @number = number
-    end
+    @number = number || LilyPondScore.autonum
     @src_file = srcfile
     init_text
     init_lyrics
     init_header
   end
-  
+
   def LilyPondScore.autonum
     if defined? @@scorenum then
       @@scorenum += 1
@@ -20,7 +16,7 @@ class LilyPondScore
     end
     return @@scorenum
   end
-  
+
   attr_reader :text
   attr_reader :lyrics_raw
   attr_reader :lyrics_readable
@@ -31,9 +27,9 @@ class LilyPondScore
   def to_s
     "#{@src_file}#" + (@header['id'] ? @header['id'] : @number).to_s
   end
-  
+
   private
-  
+
   def init_text
     # remove possible characters at the end which do not belong to the score -
     # because the "parser" of class LilyPondMusic isn't any clever
@@ -41,7 +37,7 @@ class LilyPondScore
     end_i = LilyPondScore.index_matching_brace(@text, i)
     @text = @text[0..end_i]
   end
-  
+
   def init_lyrics
     i1 = @text.index '\addlyrics'
     unless i1
@@ -53,7 +49,7 @@ class LilyPondScore
     i2 = @text.index '}', i1
     ltext = @text[i1+1..i2-1]
     @lyrics_raw = ltext.strip
-    
+
     @lyrics_readable = ltext
     # remove various garbage:
     @lyrics_readable.gsub!(' -- ', '') # syllable-separators
@@ -62,7 +58,7 @@ class LilyPondScore
     @lyrics_readable.gsub!(/\s+/, ' ') # whitespace
     @lyrics_readable.strip! # leading and trailing whitespace
   end
-  
+
   def init_header
     @header = {}
     i1 = @text.index '\header'
@@ -86,9 +82,9 @@ class LilyPondScore
       @header[name] = value
     end
   end
-  
-  public 
-  
+
+  public
+
   # finds index of a brace matching to a brace at index i1
   def LilyPondScore.index_matching_brace(str, i1)
     braces_stack = [i1]
@@ -96,11 +92,11 @@ class LilyPondScore
     loop do
       io = str.index '{', i
       ic = str.index '}', i
-      
+
       unless ic
         raise "No more closing brace found in the given string, #{braces_stack.size} braces still open."
       end
-      
+
       if io &&  io < ic then
         braces_stack.push io
         i = io+1
@@ -108,7 +104,7 @@ class LilyPondScore
         braces_stack.pop
         i = ic+1
       end
-      
+
       if braces_stack.empty? then
         return ic
       end
@@ -117,18 +113,18 @@ class LilyPondScore
 end
 
 class LilyPondMusic
-  
+
   def initialize(filename)
     @scores = []
     @id_index = {}
     @preamble = ''
-    
+
     File.open(filename, "r") do |f|
       store = ''
       score_number = 0
       beginning = true
       while l = f.gets do
-        if l =~ /\\score\s+\{/ then        
+        if l =~ /\\score\s+\{/ then
           if beginning then
             beginning = false
             @preamble = store
@@ -143,12 +139,12 @@ class LilyPondMusic
           store += l
         end
       end
-      
+
       # last score:
       create_score store, score_number
     end
   end
-  
+
   attr_reader :scores
   attr_reader :preamble
 
@@ -159,9 +155,9 @@ class LilyPondMusic
       return @id_index[i]
     end
   end
-  
+
   private
-  
+
   def create_score(store, number)
     begin
       score = LilyPondScore.new(store, number)

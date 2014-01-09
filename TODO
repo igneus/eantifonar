@@ -16,7 +16,6 @@
 * move hardcoded paths to a shared config object
 
 * indexer:
-   * bug in indexing of id-less scores (see what happens with the whole day of Epiphany)
    * lyrics for searching should be stripped of interpunction
    * chants with modified lyrics (often because of small rhythmical change) should have the original text in some header field; use this in the index
 	* save chant source as name (title of the Lilypond (master-)file)

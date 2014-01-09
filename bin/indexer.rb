@@ -202,18 +202,12 @@ module EAntifonar
               next
             end
 
-            score_img_id = score.header['id']
-            if score_img_id == nil then
-              score_img_id = counter.to_s
-              @logger.error "Score with text '#{score.lyrics_readable}' has no id. Position in ly file used."
-            end
-
             if quid_to_chant_type(quid) == :other then
               @logger.error "Score with text '#{score.lyrics_readable}' skipped: type irrelevant for E-antifonar."
               next
             end
 
-            ofn = File.basename(fpath).sub(/(\.ly)$/) {|m| '_'+score_img_id+$1 }
+            ofn = score_unique_img_fname(fpath, score)
             ofpath = File.join(@setup[:output_dir], ofn)
             oimgpath = ofpath.sub(/\.ly$/, '.png')
 
@@ -301,6 +295,17 @@ module EAntifonar
       else
         return :other
       end
+    end
+
+    # returns a unique file name for a score;
+    # fpath is path to the file where the score originally resided
+    def score_unique_img_fname(fpath, score)
+      score_img_id = score.header['id']
+      if score_img_id == nil or score == '' then
+        score_img_id = score.number.to_s
+        @logger.warn "Score with text '#{score.lyrics_readable}' has no id. Position in ly file (#{score_img_id}) used."
+      end
+      return File.basename(fpath).sub(/(\.ly)$/) {|m| '_'+score_img_id+$1 }
     end
 
     def load_config(fpath)
