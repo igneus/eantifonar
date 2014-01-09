@@ -262,7 +262,15 @@ module EAntifonar
       return File.basename(fpath).sub(/(\.ly)$/) {|m| '_'+score_img_id+$1 }
     end
 
-    private
+    # strips lyrics of characters that would make machine search uncomfortable
+    def normalized_lyrics(score)
+      return \
+        score
+          .lyrics_cleaned
+          .gsub(/[[:punct:]]/, '')
+          .gsub(/\s+/, ' ')
+          .strip
+    end
 
     # make Chant(s) out of the LilyPondScore
     def score_to_chant(score, src_path, image_path)
@@ -270,15 +278,13 @@ module EAntifonar
       quid = (score.header['quid'] or '')
       type = quid_to_chant_type quid
 
-      lyrics_cleaned = score.lyrics_readable.dup
-      lyrics_cleaned.strip!
-      lyrics_cleaned.gsub!(/\s*\*\s*/, ' ') # no asterisks
+      lyrics_cleaned = normalized_lyrics score
 
       # for some scores more variants of the lyrics are indexed:
       ls = [ lyrics_cleaned ]
       # antiphons with seasonally appended alleluia
       if type == :ant and score.text.include? '\rubrVelikAleluja' then
-        alleluia_re = /\s*[Aa]leluja[\.!]$/
+        alleluia_re = /\s*[Aa]leluja$/
         ls << lyrics_cleaned.sub(alleluia_re, '')
       end
 
@@ -307,6 +313,8 @@ module EAntifonar
         return :other
       end
     end
+
+    private
 
     def load_config(fpath)
       unless FileTest.file?(fpath)

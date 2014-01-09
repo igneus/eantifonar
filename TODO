@@ -16,8 +16,8 @@
 * move hardcoded paths to a shared config object
 
 * indexer:
-   * lyrics for searching should be stripped of interpunction
-   * chants with modified lyrics (often because of small rhythmical change) should have the original text in some header field; use this in the index
+	* lyrics for searching should be stripped of interpunction
+	* chants with modified lyrics (often because of small rhythmical change) should have the original text in some header field; use this in the index
 	* save chant source as name (title of the Lilypond (master-)file)
 
 	* check what the external processes (lilypond, mogrify) return!
@@ -38,7 +38,6 @@
 * each antiphon could be accompanied by a link to the pdf on inadiutorium.cz
 * way to choose antiphon manually (both when a fitting chant is and isn't found automatically)
 
-* make it possible to browse and query the database of scores
 * an API to access the contents of the database?
 
 * css
@@ -47,10 +46,9 @@
 
 * some pretty back-to-the-front-page link for the inner pages
 
-* don't modify links to other mutations of breviar.sk!
-
 * cron task pulling changes from github and reindexing changed files
 
 # NICE TO HAVE
 
 * (bonus) find where exactly httpclient clashed with Sinatra and eventually send a bug report
+* indexer: for antiphons with alleluia not only index lyrics without it, but also compile an alleluia-stripped score
