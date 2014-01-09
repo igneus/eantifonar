@@ -70,6 +70,7 @@ GEM
     i18n (0.6.9)
     json (1.8.1)
     json_pure (1.8.1)
+    log4r (1.1.10)
     mime-types (1.25.1)
     mini_portile (0.5.2)
     multi_json (1.8.2)
@@ -111,6 +112,7 @@ DEPENDENCIES
   datamapper
   dm-sqlite-adapter
   haml
+  log4r
   mime-types
   nokogiri
   shotgun

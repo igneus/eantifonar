@@ -1,16 +1,24 @@
+# BASIC FEATURES, BUGS
+
+* logging
+
+* include psalm tones
+* point psalms
+* include responsories
+* include Deus in adiutorium, final blessing, Te Deum
+
 * caching
 
-* bug in indexing of id-less scores (see what happens with the whole day of Epiphany)
-
-* meaningful title
+* meaningful <title>
 
 * fix the 'open door' in static_content
 
 * move hardcoded paths to a shared config object
 
 * indexer:
-	* lyrics for searching should be downcased and stripped of interpunction
-	* chants with modified lyrics (often because of small rhythmical change) should have the original text in some header field; use this in the index
+   * bug in indexing of id-less scores (see what happens with the whole day of Epiphany)
+   * lyrics for searching should be stripped of interpunction
+   * chants with modified lyrics (often because of small rhythmical change) should have the original text in some header field; use this in the index
 	* save chant source as name (title of the Lilypond (master-)file)
 
 	* check what the external processes (lilypond, mogrify) return!
@@ -26,14 +34,6 @@
 * blacklist and some way to give priority (scores from some files should never be shown in the web antiphonal, e.g.
 	because they don't fit to the gregorian psalm tones; others are a 'second option' and shouldn't be shown by default)
 
-* (bonus) find where exactly httpclient clashed with Sinatra and eventually send a bug report
-
-* logging
-
-* include psalm tones
-* point psalms
-* include responsories
-* include Deus in adiutorium, final blessing, Te Deum
 * hymn tunes
 
 * each antiphon could be accompanied by a link to the pdf on inadiutorium.cz
@@ -51,3 +51,7 @@
 * don't modify links to other mutations of breviar.sk!
 
 * cron task pulling changes from github and reindexing changed files
+
+# NICE TO HAVE
+
+* (bonus) find where exactly httpclient clashed with Sinatra and eventually send a bug report

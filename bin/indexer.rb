@@ -8,6 +8,7 @@
 require 'data_mapper'
 require 'fileutils'
 require 'optparse'
+require 'log4r'
 
 require_relative '../lib/lilytools/musicreader.rb'
 require_relative '../lib/eantifonar/config'
@@ -24,10 +25,9 @@ module EAntifonar
     end
 
     # takes a Chant instance and saves it
-    def save_chant(chant)
+    def save_chant(chant, logger)
       unless chant.valid?
-        STDERR.puts "warning: Chant instance invalid"
-        p chant
+        logger.warn "warning: Chant instance invalid: " + chant.inspect
       end
       chant.save
     end
@@ -42,7 +42,7 @@ module EAntifonar
   # if it is different
   class UpdateIndexingStrategy < IndexingStrategy
 
-    def save_chant(chant)
+    def save_chant(chant, logger)
       unless to_save? chant
         return false
       end
@@ -53,12 +53,12 @@ module EAntifonar
       if present then
         destroyed = present.destroy
         unless destroyed
-          STDERR.puts "Failed to delete old record of chant #{present.src_path}##{present.score_id}"
+          logger.error "Failed to delete old record of chant #{present.src_path}##{present.score_id}"
           return false
         end
       end
 
-      super(chant)
+      super(chant, logger)
     end
 
     def to_save?(chant)
@@ -131,7 +131,9 @@ module EAntifonar
       :mode => :update # :update | :reindex
     }
 
-    def initialize(setup)
+    def initialize(setup, logger)
+      @logger = logger
+
       @setup = DEFAULT_SETUP.dup
       @setup.update(load_config(File.join(@setup[:app_root], @setup[:config_file])))
       @setup.update setup
@@ -185,7 +187,7 @@ module EAntifonar
         file_modified = File.mtime(fpath)
         oldest_indexed_time = Chant.min(:created, :conditions => ['src_path = ?', fpath_relative])
         if oldest_indexed_time and oldest_indexed_time >= file_modified then
-          STDERR.puts "#{fpath_relative} skipped: not modified"
+          @logger.error "#{fpath_relative} skipped: not modified"
           next
         end
 
@@ -196,18 +198,18 @@ module EAntifonar
             counter += 1
             quid = score.header['quid']
             if quid == nil then
-              STDERR.puts "Score with text '#{score.lyrics_readable}' skipped: type unspecified."
+              @logger.error "Score with text '#{score.lyrics_readable}' skipped: type unspecified."
               next
             end
 
             score_img_id = score.header['id']
             if score_img_id == nil then
               score_img_id = counter.to_s
-              STDERR.puts "Score with text '#{score.lyrics_readable}' has no id. Position in ly file used."
+              @logger.error "Score with text '#{score.lyrics_readable}' has no id. Position in ly file used."
             end
 
             if quid_to_chant_type(quid) == :other then
-              STDERR.puts "Score with text '#{score.lyrics_readable}' skipped: type irrelevant for E-antifonar."
+              @logger.error "Score with text '#{score.lyrics_readable}' skipped: type irrelevant for E-antifonar."
               next
             end
 
@@ -221,7 +223,7 @@ module EAntifonar
             )
 
             unless @indexing_strategy.to_save?(chants.first)
-              STDERR.puts "#{chants.first.src_path}##{chants.first.score_id} already up to date."
+              @logger.error "#{chants.first.src_path}##{chants.first.score_id} already up to date."
               next
             end
 
@@ -242,7 +244,7 @@ module EAntifonar
             FileUtils.mv oimgpath, EAntifonar::CONFIG.chants_path
 
             chants.each do |chant|
-              @indexing_strategy.save_chant(chant)
+              @indexing_strategy.save_chant(chant, @logger)
             end
           end
         rescue => ex
@@ -323,6 +325,12 @@ end # module
 
 
 if $0 == __FILE__ then
+  logger = Log4r::Logger.new 'indexing'
+  logger.outputters = [
+    Log4r::StderrOutputter.new('stderr'),
+    Log4r::FileOutputter.new('fo', :filename => EAntifonar::CONFIG.indexing_log)
+  ]
+
   options = {}
 
   optparse = OptionParser.new do |opts|
@@ -352,11 +360,11 @@ if $0 == __FILE__ then
   end
 
   begin
-    indexer = EAntifonar::Indexer.new options
+    indexer = EAntifonar::Indexer.new options, logger
   rescue => ex
     raise unless ex.is_a? RuntimeError
 
-    STDERR.puts "Error during start: "+ex.message
+    logger.fatal "Error during start: "+ex.message
     exit 1
   end
 
