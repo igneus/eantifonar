@@ -10,9 +10,10 @@ require 'fileutils'
 require 'optparse'
 require 'log4r'
 
-require_relative '../lib/lilytools/musicreader.rb'
+require_relative '../lib/lilytools/musicreader'
 require_relative '../lib/eantifonar/config'
 require_relative '../lib/eantifonar/db_setup'
+require_relative '../lib/eantifonar/lyrictools'
 
 DataMapper::Model.raise_on_save_failure = true
 
@@ -264,12 +265,7 @@ module EAntifonar
 
     # strips lyrics of characters that would make machine search uncomfortable
     def normalized_lyrics(score)
-      return \
-        score
-          .lyrics_cleaned
-          .gsub(/[[:punct:]]/, '')
-          .gsub(/\s+/, ' ')
-          .strip
+      return LyricTools.normalize score.lyrics_readable
     end
 
     # make Chant(s) out of the LilyPondScore

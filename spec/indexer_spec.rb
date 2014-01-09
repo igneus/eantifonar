@@ -28,17 +28,17 @@ describe EAntifonar::Indexer do
   describe '#normalized_lyrics' do
 
     it 'removes interpunction' do
-      score = OpenStruct.new({:lyrics_cleaned => 'Dobrý den, dobrý den, bába letí komínem.'})
+      score = OpenStruct.new({:lyrics_readable => 'Dobrý den, dobrý den, bába letí komínem.'})
       @indexer.normalized_lyrics(score).should eq 'Dobrý den dobrý den bába letí komínem'
     end
 
     it 'removes redundant whitespace' do
-      score = OpenStruct.new({:lyrics_cleaned => "  Dobrý  \tden \n\n "})
+      score = OpenStruct.new({:lyrics_readable => "  Dobrý  \tden \n\n "})
       @indexer.normalized_lyrics(score).should eq 'Dobrý den'
     end
 
     it 'removes asterisks' do
-      score = OpenStruct.new({:lyrics_cleaned => "Dobrý * den"})
+      score = OpenStruct.new({:lyrics_readable => "Dobrý * den"})
       @indexer.normalized_lyrics(score).should eq 'Dobrý den'
     end
   end

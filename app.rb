@@ -11,6 +11,7 @@ require 'data_mapper'
 require_relative 'lib/eantifonar/config'
 require_relative 'lib/eantifonar/db_setup'
 
+require_relative 'lib/eantifonar/lyrictools'
 require_relative 'lib/eantifonar/decorator'
 
 class EAntifonarApp < Sinatra::Base
