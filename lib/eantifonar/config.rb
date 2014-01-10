@@ -5,7 +5,8 @@ module EAntifonar
   CONFIG = OpenStruct.new(
     :app_root => File.expand_path('.'), # by default: current working directory
 
-    :indexing_log => File.join('log', 'indexing.log')
+    :indexing_log => File.join('log', 'indexing.log'),
+    :decorator_log => File.join('log', 'decorator.log'),
   )
 
   class << CONFIG

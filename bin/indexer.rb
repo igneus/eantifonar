@@ -173,12 +173,17 @@ module EAntifonar
       @prepend = File.read(File.expand_path('eantifonar_common.ly', File.join(@setup[:app_root], 'data', 'ly')))
     end
 
-    def index
+    # before we start to produce output
+    def prepare
       unless File.directory? @setup[:output_dir]
         Dir.mkdir @setup[:output_dir]
       end
 
       Dir.chdir @setup[:output_dir] # because we will execute programs expecting this
+    end
+
+    def index
+      prepare
 
       @setup[:files_to_process].each do |fpath|
 
@@ -252,6 +257,33 @@ module EAntifonar
       end
     end
 
+    def generate_psalm_tones
+      prepare
+
+      # Simplified process without database access
+      # the psalm tones are easily found by file name
+      fpath = File.join(@setup[:scores_dir], 'psalmodie.ly')
+      music = LilyPondMusic.new fpath
+      music.scores.each do |score|
+        ofn = score_unique_img_fname(fpath, score)
+        ofpath = File.join(@setup[:output_dir], ofn)
+        oimgpath = ofpath.sub(/\.ly$/, '.png')
+
+        # create temporary compilable file with just the single score
+        File.open(ofpath, 'w') do |fw|
+          fw.puts @prepend
+          fw.puts score.text
+        end
+
+        # process it by LilyPond,
+        `lilypond --png #{ofpath}`
+        # ... crop the image by ImageMagick
+        `mogrify -trim -transparent white #{oimgpath}`
+        # ... copy it to the eantifonar data directory
+        FileUtils.mv oimgpath, EAntifonar::CONFIG.chants_path
+      end
+    end
+
     # returns a unique file name for a score;
     # fpath is path to the file where the score originally resided
     def score_unique_img_fname(fpath, score)
@@ -260,6 +292,7 @@ module EAntifonar
         score_img_id = score.number.to_s
         @logger.warn "Score with text '#{score.lyrics_readable}' has no id. Position in ly file (#{score_img_id}) used."
       end
+      score_img_id.gsub!(/\s+/, '_')
       return File.basename(fpath).sub(/(\.ly)$/) {|m| '_'+score_img_id+$1 }
     end
 
@@ -355,6 +388,14 @@ if $0 == __FILE__ then
       options[:mode] = :reindex
     end
 
+    opts.on "-n", "--no-indexing", "Skip indexing (useful if you only want to generate psalm tones)" do |out|
+      options[:skip_indexing] = true
+    end
+
+    opts.on "-t", "--tones", "Generate psalm tones" do |out|
+      options[:psalmtones] = true
+    end
+
     opts.on "-h", "--help", "Print this help and exit" do
       puts opts
       exit 0
@@ -377,6 +418,10 @@ if $0 == __FILE__ then
     exit 1
   end
 
-  indexer.index
+  indexer.index unless options[:skip_indexing]
+
+  if options[:psalmtones] then
+    indexer.generate_psalm_tones
+  end
 end
 

@@ -6,6 +6,7 @@ require 'nokogiri'
 require 'mime/types'
 require 'yaml'
 require 'haml'
+require 'log4r'
 
 require 'data_mapper'
 require_relative 'lib/eantifonar/config'
@@ -28,7 +29,12 @@ class EAntifonarApp < Sinatra::Base
       @wrapped_domains[d] = {:full => full, :regex => Regexp.new('^'+full+'/*')}
     end
 
-    @decorator = Decorator.new
+    decorator_logger = Log4r::Logger.new 'decorator'
+    decorator_logger.outputters = [
+      Log4r::StderrOutputter.new('stderr'),
+      Log4r::FileOutputter.new('fo', :filename => EAntifonar::CONFIG.decorator_log)
+    ]
+    @decorator = Decorator.new decorator_logger
   end
 
   Encoding.default_external = 'UTF-8' if "1.9".respond_to?(:encoding)
