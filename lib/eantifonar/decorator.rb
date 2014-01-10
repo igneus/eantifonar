@@ -12,10 +12,15 @@ module EAntifonar
     # accepts a Nokogiri html document; modifies it directly
     def decorate(doc)
       # log title of the day + hour
-      heading = doc.css('h2').collect {|h2| h2.text.strip }.join(' : ')
-      heading += ' : ' + doc.css("a[name=SPOL-CAST-SPOM] + p + center").first.text.strip.downcase
-      @logger.info "Decorating: "+heading
+      hour_heading = doc.css('h2').children.collect {|h2| h2.text.strip }.select {|h2| h2 != '' }.join(' : ')
+      begin
+        hour_heading += ' : ' + doc.xpath("//a[@name='POPIS']/following::center[1]").text.strip.downcase
+      rescue
+        # hour title not found - doesn't matter
+      end
+      @logger.info "Decorating: "+hour_heading
 
+      add_title doc, hour_heading
       add_css doc
       add_menu doc
       add_footer_notice doc
@@ -113,6 +118,12 @@ module EAntifonar
       t_handy.gsub!(/\s+/, '_')
 
       return "<div class=\"eantifonar-psalm-tone\"><img src=\"/chants/psalmodie_#{t_handy}.png\" alt=\"#{t_pretty}\" /></div>"
+    end
+
+    def add_title(doc, title)
+      doc.xpath('/html/head/title').first.content = title + ' @ E-antifonář'
+    rescue
+      # title not found in the document; doesn't matter
     end
 
     # inserts additional stylesheets in the head

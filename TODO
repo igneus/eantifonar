@@ -9,8 +9,6 @@
 
 * caching of decorated pages to handle requests for identical content without redundant processing
 
-* meaningful <title>
-
 * fix the 'open door' in static_content
 
 * move hardcoded paths to a shared config object
