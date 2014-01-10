@@ -124,7 +124,7 @@ class LilyPondMusic
       score_number = 0
       beginning = true
       while l = f.gets do
-        if l =~ /\\score\s+\{/ then
+        if l =~ /\\score\s*\{/ then
           if beginning then
             beginning = false
             @preamble = store
