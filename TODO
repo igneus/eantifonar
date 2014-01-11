@@ -19,8 +19,6 @@
 	* chants with modified lyrics (often because of small rhythmical change) should have the original text in some header field; use this in the index
 	* save chant source as name (title of the Lilypond (master-)file)
 
-	* check what the external processes (lilypond, mogrify) return!
-		- don't save Chant that doesn't compile
 	* run lilypond and mogrify in several concurrent processes
 
 	* if a repo is not specified, make a fresh temporary clone in /tmp

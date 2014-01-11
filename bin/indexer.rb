@@ -9,6 +9,7 @@ require 'data_mapper'
 require 'fileutils'
 require 'optparse'
 require 'log4r'
+require 'open3'
 
 require_relative '../lib/lilytools/musicreader'
 require_relative '../lib/eantifonar/config'
@@ -234,12 +235,17 @@ module EAntifonar
             end
 
             # compile, crop, copy to the data directory
-            lilypond ofpath
-            crop_image oimgpath
-            FileUtils.mv oimgpath, EAntifonar::CONFIG.chants_path
+            begin
+              lilypond ofpath
+              crop_image oimgpath
+              FileUtils.mv oimgpath, EAntifonar::CONFIG.chants_path
 
-            chants.each do |chant|
-              @indexing_strategy.save_chant(chant, @logger)
+              chants.each do |chant|
+                @indexing_strategy.save_chant(chant, @logger)
+              end
+            rescue ExternalCommandFailedException => ex
+              @logger.error ex.message
+              @logger.error "Score with text '#{score.lyrics_readable}' skipped due to a compilation error (see above)."
             end
           end
         rescue => ex
@@ -270,19 +276,42 @@ module EAntifonar
           fw.puts score.text
         end
 
-        lilypond ofpath
-        crop_image oimgpath
-        FileUtils.mv oimgpath, EAntifonar::CONFIG.chants_path
+        begin
+          lilypond ofpath
+          crop_image oimgpath
+          FileUtils.mv oimgpath, EAntifonar::CONFIG.chants_path
+        rescue ExternalCommandFailedException => ex
+          @logger.error ex.message
+        end
       end
     end
 
 
     def lilypond(lypath)
-      `lilypond -dresolution=300 --png #{lypath}`
+      execute_cmd "lilypond -dresolution=300 --png #{lypath}"
     end
 
     def crop_image(imgpath)
-      `mogrify -trim -transparent white #{imgpath}`
+      execute_cmd "mogrify -trim -transparent white #{imgpath}"
+    end
+
+    # runs command, on success returns it's output like backticks,
+    # on fail raises ExternalCommandFailedException with a verbose message
+    def execute_cmd(cmd)
+      stdout, stderr, status = Open3.capture3 cmd
+      if status != 0 then
+        msg = "Command '#{cmd}' failed (#{status})"
+        if stderr.size > 0 then
+          msg += ":\n#{stderr}"
+        elsif stdout.size > 0 then
+          msg += ":\n#{stdout}"
+        end
+        raise ExternalCommandFailedException.new msg
+      end
+      return stdout
+    end
+
+    class ExternalCommandFailedException < RuntimeError
     end
 
     # returns a unique file name for a score;
