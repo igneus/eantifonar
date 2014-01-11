@@ -6,9 +6,18 @@
 % reset tagline for easier image trimming
 \header { tagline = "" }
 
-% reset score title
 \paper {
+  % reset score title
   scoreTitleMarkup = \markup{}
+  
+  % set font
+  myStaffSize = #20
+  #(define fonts
+    (make-pango-font-tree 
+                          "URW Bookman L"
+                          "Helvetica"
+                          "Courier"
+     (/ myStaffSize 20)))
 }
 
 \layout {  

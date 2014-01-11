@@ -14,6 +14,7 @@
 * move hardcoded paths to a shared config object
 
 * indexer:
+	* mode refreshing selected files, regardless of their being unmodified etc.
 	* normalized responsory lyrics should be r1 r2 v (without r2 repetition and Glory be)
 	* chants with modified lyrics (often because of small rhythmical change) should have the original text in some header field; use this in the index
 	* save chant source as name (title of the Lilypond (master-)file)
