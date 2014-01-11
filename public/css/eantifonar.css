@@ -48,3 +48,4 @@ b { font-weight: normal; } /* bold is much overused at ebreviar */
 table.chant-detail { margin: 50px 0; width: 100%; border-collapse: collapse; }
 table.chant-detail td { margin: 0; padding: 5px; border: 1px solid black; }
 table.chant-detail td.h { text-align: right; vertical-align: top; }
+table.chant-detail div.ly-source { overflow-x: scroll; width: 600px; height: auto; }
