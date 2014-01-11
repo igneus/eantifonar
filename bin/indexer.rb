@@ -233,14 +233,9 @@ module EAntifonar
               fw.puts score.text
             end
 
-            # process it by LilyPond,
-            `lilypond --png #{ofpath}`
-
-            # ... crop the image by ImageMagick
-
-            `mogrify -trim -transparent white #{oimgpath}`
-
-            # ... copy it to the eantifonar data directory
+            # compile, crop, copy to the data directory
+            lilypond ofpath
+            crop_image oimgpath
             FileUtils.mv oimgpath, EAntifonar::CONFIG.chants_path
 
             chants.each do |chant|
@@ -275,13 +270,19 @@ module EAntifonar
           fw.puts score.text
         end
 
-        # process it by LilyPond,
-        `lilypond --png #{ofpath}`
-        # ... crop the image by ImageMagick
-        `mogrify -trim -transparent white #{oimgpath}`
-        # ... copy it to the eantifonar data directory
+        lilypond ofpath
+        crop_image oimgpath
         FileUtils.mv oimgpath, EAntifonar::CONFIG.chants_path
       end
+    end
+
+
+    def lilypond(lypath)
+      `lilypond -dresolution=300 --png #{lypath}`
+    end
+
+    def crop_image(imgpath)
+      `mogrify -trim -transparent white #{imgpath}`
     end
 
     # returns a unique file name for a score;
