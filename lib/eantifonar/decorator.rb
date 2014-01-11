@@ -10,7 +10,7 @@ module EAntifonar
     end
 
     # accepts a Nokogiri html document; modifies it directly
-    def decorate(doc)
+    def decorate(doc, request_path)
       # log title of the day + hour
       hour_heading = doc.css('h2').children.collect {|h2| h2.text.strip }.select {|h2| h2 != '' }.join(' : ')
       begin
@@ -23,7 +23,7 @@ module EAntifonar
       add_title doc, hour_heading
       add_css doc
       add_menu doc
-      add_footer_notice doc
+      add_footer_notice doc, request_path
 
       chants_inserted = {} # keeps track of inserted chants to avoid useless repetition
 
@@ -143,12 +143,16 @@ module EAntifonar
       doc.css('body').first.add_child(menu_code)
     end
 
-    def add_footer_notice(doc)
-      doc.css('p.patka').last.after('<p class="patka">
+    def add_footer_notice(doc, request_path)
+      footer = doc.css('p.patka').last
+      footer.after('<p class="patka">
         Nenacházíte se na e-breviáři, ale na e-antifonáři,
         který z e-breviáře stahuje texty a modifikuje je.
         Byl upraven styl stažené stránky a k některým textům vloženy noty.
         Za e-antifonář může <a href="mailto:jkb.pavlik@gmail.com">Jakub Pavlík</a>.
+        </p>')
+      footer.after('<p class="patka">
+        <a href="'+request_path+'">Zobrazit odpovídající stránku na e-breviáři.</a>
         </p>')
     end
 

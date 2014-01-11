@@ -220,7 +220,9 @@ class EAntifonarApp < Sinatra::Base
     # modify the response and send it to the client
     response_body = request.response.body
     if html? response_body then
-      response_body = modify_page_content(response_body)
+      orig_url = 'http://breviar.sk'+orig_request.path+'?'+::URI.encode_www_form(params)
+      STDERR.puts orig_url
+      response_body = modify_page_content(response_body, orig_url)
     end
 
     response_headers = forwarded_params = copy_keys(request.response.headers, ['Date', 'Content-Type'])
@@ -229,7 +231,7 @@ class EAntifonarApp < Sinatra::Base
     return forwarded_response
   end
 
-  def modify_page_content(content)
+  def modify_page_content(content, request_path)
 
     doc = Nokogiri::HTML(content)
     doc.encoding = 'utf-8'
@@ -253,7 +255,7 @@ class EAntifonarApp < Sinatra::Base
       end
     end
 
-    @decorator.decorate doc # insert scores etc.
+    @decorator.decorate doc, request_path # insert scores etc.
     return doc.to_html(:encoding => 'utf-8')
   end
 
