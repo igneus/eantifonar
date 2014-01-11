@@ -74,8 +74,9 @@ module EAntifonar
       # insert the decorated antiphon in the document
       node.replace ant
 
-      # code below only makes sense for the first occurrence of each antiphon
-      if chants_inserted.include? ant_text then
+      # code below only makes sense if the music was found and for the first occurrence of each antiphon
+      if chants.size == 0 or
+          chants_inserted.include? ant_text then
         return
       end
 
