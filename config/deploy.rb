@@ -40,4 +40,13 @@ namespace :deploy do
 
   after :finishing, 'deploy:cleanup'
 
+  after :finished, :set_current_version do
+    on roles(:app) do
+      # dump current git version
+      within release_path do
+        execute :echo, "#{capture("cd #{repo_path} && git rev-parse --short HEAD")} >> public/REVISION"
+      end
+    end
+  end
+
 end

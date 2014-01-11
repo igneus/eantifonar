@@ -57,7 +57,13 @@ class EAntifonarApp < Sinatra::Base
   end
 
   get '/about.html' do
-    haml :about
+    rev = nil
+    rev_file = File.join('public', 'REVISION')
+    if File.exist? rev_file then
+      File.open(rev_file) {|f| rev = f.gets }
+    end
+
+    haml :about, :locals => {:git_revision => rev}
   end
 
   ## browsing database content

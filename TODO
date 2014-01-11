@@ -2,10 +2,12 @@
 
 * logging
 
+* to each decorated hour page link to the same hour at "pure" e-breviar
 * point psalms
 * include responsories
 * include Deus in adiutorium, final blessing, Te Deum
 * include hymn tunes (permission needed)
+* reference listing of all psalmtones in use
 
 * caching of decorated pages to handle requests for identical content without redundant processing
 
@@ -14,6 +16,8 @@
 * move hardcoded paths to a shared config object
 
 * indexer:
+	* find why mogrify often doesn't find the png created by lilypond
+	* log: identify file by it's relative path, score by it's fial
 	* mode refreshing selected files, regardless of their being unmodified etc.
 	* normalized responsory lyrics should be r1 r2 v (without r2 repetition and Glory be)
 	* chants with modified lyrics (often because of small rhythmical change) should have the original text in some header field; use this in the index
@@ -24,15 +28,13 @@
 	* if a repo is not specified, make a fresh temporary clone in /tmp
 	* prettier images
 	* should work correctly with output dir just anywhere, shouldn't it?
+	* blacklist and some way to give priority (scores from some files should never be shown in the web antiphonal, e.g.
+	  because they don't fit to the gregorian psalm tones; others are a 'second option' and shouldn't be shown by default)
 
 * database listing:
 	* preserve filter while browsing between list pages
 	* ordering
 
-* blacklist and some way to give priority (scores from some files should never be shown in the web antiphonal, e.g.
-	because they don't fit to the gregorian psalm tones; others are a 'second option' and shouldn't be shown by default)
-
-* each antiphon could be accompanied by a link to the pdf on inadiutorium.cz
 * way to choose antiphon manually (both when a fitting chant is and isn't found automatically)
 
 * css
@@ -41,10 +43,11 @@
 
 * some pretty back-to-the-front-page link for the inner pages
 
-* cron task pulling changes from github and reindexing changed files
-
 # NICE TO HAVE
+
+* cron task pulling changes from github and reindexing changed files
 
 * (bonus) find where exactly httpclient clashed with Sinatra and eventually send a bug report
 * indexer: for antiphons with alleluia not only index lyrics without it, but also compile an alleluia-stripped score
 * an API to access the contents of the database?
+* each antiphon could be accompanied by a link to the pdf on inadiutorium.cz

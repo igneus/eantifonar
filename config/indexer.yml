@@ -12,3 +12,4 @@ skip_files:
   - responsoria_nocturna.ly
   - '*_uprostreddne.ly'
   - zalm*.ly
+  - dilyresponsorii.ly
