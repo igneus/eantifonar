@@ -1,5 +1,7 @@
 # BASIC FEATURES, BUGS
 
+* psalter responsories must have the doxology notated
+
 * update project description
 
 * logging
@@ -45,6 +47,8 @@
 * some pretty back-to-the-front-page link for the inner pages
 
 # NICE TO HAVE
+
+* cope with any settings modifying ebreviar's output (currently only the default output is supported)
 
 * cron task pulling changes from github and reindexing changed files
 

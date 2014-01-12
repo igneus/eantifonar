@@ -31,7 +31,14 @@ module EAntifonar
       doc.css('p > b > span.red').each_with_index do |span,ant_i|
         if span.text.downcase.include? 'ant' then
           p = span.parent.parent
-          ant = decorate_antiphon p, chants_inserted
+          decorate_antiphon p, chants_inserted
+        end
+      end
+
+      doc.css('p > span.redsmall').each do |span|
+        if span.text == 'ZPĚV PO KRÁTKÉM ČTENÍ' then
+          p = span.parent
+          decorate_responsory p
         end
       end
 
@@ -50,14 +57,17 @@ module EAntifonar
         end
       end
 
-      chants = Chant.all(:lyrics_cleaned => ant_text)
+      chants = Chant.all(:lyrics_cleaned => ant_text, :chant_type => :ant)
 
       ant = Nokogiri::XML::Node.new('div', node.document)
       ant['class'] = 'eantifonar-antifona'
       ant.add_child node.dup # the original <p> containing the antiphon text
 
+      # insert the decorated antiphon in the document
+      node.replace ant
+
       if chants_inserted.include? ant_text and
-          not (node.previous_element['class'] == 'psalm' and node.previous_element.previous_element['class'] == 'psalm') then
+          not (ant.previous_element['class'] == 'psalm' and ant.previous_element.previous_element['class'] == 'psalm') then
         # this is a second occurrence of an antiphon for a single psalm - don't repeat the score.
         return nil
       end
@@ -65,14 +75,10 @@ module EAntifonar
       if chants.size > 0 then
         chant = chants.first # select one from a possibly larger set
         ant.add_child(chant_annotation(chant))
-        src = File.join('/chants', File.basename(chant.image_path))
-        ant.add_child "<div class=\"eantifonar-score\"><a href=\"/chant/#{chant.id}\"><img src=\"#{src}\"></a></div>"
+        ant.add_child(chant_score(chant))
       else
         @logger.error "Chant not found for ant. '#{ant_text}'."
       end
-
-      # insert the decorated antiphon in the document
-      node.replace ant
 
       # code below only makes sense if the music was found and for the first occurrence of each antiphon
       if chants.size == 0 or
@@ -99,6 +105,40 @@ module EAntifonar
       chants_inserted[ant_text] = chant
     end
 
+    def decorate_responsory(node)
+      r_text = node.xpath('./b[1]').first.text.sub('O.', '')
+      # second last full-stop - beginning of the response indicating repetition - remove what follows
+      rep_i = r_text.rindex('.', r_text.rindex('.')-1)
+      r_text = r_text[0..rep_i]
+
+      v_text = node.xpath('./b[2]').first.text.sub('V.', '')
+      r2i = v_text.rindex '*' # second part of the response repeated - remove what follows
+      v_text = v_text[0..r2i]
+
+      resp_text = r_text + v_text
+      resp_text = LyricTools.normalize resp_text
+
+      chants = Chant.all(:lyrics_cleaned => resp_text, :chant_type => :resp)
+
+      resp = Nokogiri::XML::Node.new('div', node.document)
+      resp['class'] = 'eantifonar-responsorium'
+      resp.add_child node.dup # the original <p> containing the antiphon text
+
+      # insert the decorated responsory in the document
+      node.replace resp
+
+      if chants.size > 0 then
+        chant = chants.first # select one from a possibly larger set
+        # urgh ... title of the Gospel canticle is inside the same <p>
+        # as responsory
+        resp_last_verse = resp.xpath('./p/b[2]').first
+        resp_last_verse.after chant_score(chant)
+        resp_last_verse.after chant_annotation(chant)
+      else
+        @logger.error "Chant not found for resp. '#{resp_text}'."
+      end
+    end
+
     def chant_annotation(chant)
       an = ''
       if chant.header.has_key? 'modus' then
@@ -107,8 +147,13 @@ module EAntifonar
           an += '.' + chant.header['differentia']
         end
       end
-
       return "<div class=\"eantifonar-chant-annotation\">#{an}</div>"
+    end
+
+    # score HTML
+    def chant_score(chant)
+      src = File.join('/chants', File.basename(chant.image_path))
+      return "<div class=\"eantifonar-score\"><a href=\"/chant/#{chant.id}\"><img src=\"#{src}\"></a></div>"
     end
 
     def psalm_tone_for(chant)
