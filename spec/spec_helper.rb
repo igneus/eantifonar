@@ -17,3 +17,5 @@ RSpec.configure do |config|
 end
 
 require_relative '../bin/indexer'
+
+include EAntifonar

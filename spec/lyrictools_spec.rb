@@ -28,4 +28,25 @@ describe EAntifonar::LyricTools do
       @lt.normalize(l).should eq 'Dobrý den'
     end
   end
+
+  describe '::responsory_unique_parts' do
+
+    it 'returns whole response and verse' do
+      l = "\\Response Kriste, Synu živého Boha, *
+      smiluj se nad námi.
+      \\Verse Ty, který sedíš po pravici Otce, *
+      \\Response smiluj se nad námi.
+      \\textRespDoxologie"
+      @lt.responsory_unique_parts(l).should eq "Kriste, Synu živého Boha, * smiluj se nad námi. Ty, který sedíš po pravici Otce, *"
+    end
+
+    it 'throws ArgumentError if the responsory is not well structured' do
+      l = "\\Response Kriste, Synu živého Boha, *
+      smiluj se nad námi.
+      Ty, který sedíš po pravici Otce, * smiluj se nad námi."
+      expect do
+        @lt.responsory_unique_parts(l)
+      end.to raise_exception ArgumentError
+    end
+  end
 end

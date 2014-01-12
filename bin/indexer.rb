@@ -287,6 +287,7 @@ module EAntifonar
     end
 
 
+
     def lilypond(lypath)
       #execute_cmd "lilypond -dresolution=120 --png #{lypath}"
       execute_cmd "lilypond --png #{lypath}"
@@ -315,6 +316,8 @@ module EAntifonar
     class ExternalCommandFailedException < RuntimeError
     end
 
+
+
     # returns a unique file name for a score;
     # fpath is path to the file where the score originally resided
     def score_unique_img_fname(fpath, score)
@@ -329,6 +332,22 @@ module EAntifonar
 
     # strips lyrics of characters that would make machine search uncomfortable
     def normalized_lyrics(score)
+      if quid_to_chant_type(score.header['quid']) == :resp then
+        # here we can't use lyrics_readable - we need the variables preserved
+        begin
+          return LyricTools.normalize_responsory score.lyrics_raw.gsub(/\s+--\s+/, '')
+        rescue ArgumentError
+          # Lyrics of this responsory aren't well structured.
+          # Let's move on and return at least regularly normalized Lyrics.
+          sample_max_len = 20
+          lyr_sample = score.lyrics_readable
+          if lyr_sample.size > sample_max_len then
+            lyr_sample = lyr_sample[0..20]
+          end
+          @logger.error "Lyrics of responsory beginning with '#{lyr_sample}' aren't well structured. Fallback to non-responsory normalization."
+        end
+      end
+
       return LyricTools.normalize score.lyrics_readable
     end
 
