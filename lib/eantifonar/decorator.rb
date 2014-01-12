@@ -103,6 +103,8 @@ module EAntifonar
       end
 
       chants_inserted[ant_text] = chant
+    rescue => ex
+      @logger.error "#{ex.class} while decorating antiphon '#{node.text}': "+ex.message
     end
 
     def decorate_responsory(node)
@@ -137,6 +139,8 @@ module EAntifonar
       else
         @logger.error "Chant not found for resp. '#{resp_text}'."
       end
+    rescue => ex
+      @logger.error "#{ex.class} while decorating responsory '#{node.text}': "+ex.message
     end
 
     def chant_annotation(chant)
