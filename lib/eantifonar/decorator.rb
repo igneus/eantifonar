@@ -22,6 +22,7 @@ module EAntifonar
 
       add_title doc, hour_heading
       add_css doc
+      add_js doc
       add_menu doc
       add_footer_notice doc, request_path
 
@@ -184,6 +185,29 @@ module EAntifonar
       unless stylesheets.last['href'].include? 'breviar-lista.css'
         stylesheets.last.after('<link rel="stylesheet" type="text/css" href="/css/eantifonar.css" />')
       end
+    end
+
+    # inserts necessary javascripts in the head
+    def add_js(doc)
+      scripts = [
+        '/vendor/js/jquery-2.1.0.min.js',
+        '/js/chantplayer.js'
+      ]
+      head = doc.css('head')
+      return if head.empty?
+      head = head.first
+
+      scripts.each do |s|
+        head.add_child "<script src=\"#{s}\" type=\"text/javascript\"></script>"
+      end
+
+      head.add_child "<script type=\"text/javascript\">
+        $(document).ready(function(){
+          $('.eantifonar-antifona').each(function(){
+            addChantPlayer($(this), 'click', '\\relative c\\' { a4 b c d e }');
+          });
+        });
+        </script>"
     end
 
     # adds our menu with links
