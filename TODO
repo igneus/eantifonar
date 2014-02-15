@@ -1,15 +1,16 @@
 # BASIC FEATURES, BUGS
 
+* reference listing of all psalmtones in use
+
+* error pages
+
 * find the right size and resolution of the score images
 
 * psalter responsories must have the doxology notated
 
-* update project description
-
 * point psalms
 * include Deus in adiutorium, final blessing, Te Deum
 * include hymn tunes (permission needed?)
-* reference listing of all psalmtones in use
 
 * caching of decorated pages to handle requests for identical content without redundant processing
 
