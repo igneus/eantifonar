@@ -19,6 +19,7 @@ b { font-weight: normal; } /* bold is much overused at ebreviar */
 /* eantifonar proper content ------------------------------------------------- */
 
 .eantifonar-score a, .eantifonar-score a:hover { background-color: transparent; border-style: none; }
+.eantifonar-score .lily { display: none; }
 
 .eantifonar-antifona { margin: 10px 0 30px 0; }
 
