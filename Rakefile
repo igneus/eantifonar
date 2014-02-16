@@ -1,14 +1,6 @@
-$coffee = []
 
-Dir['public/js/*.coffee'].each do |c|
-  o = c.sub('.coffee', '.js')
-  $coffee << o
-
-  file o => [c] do
-    sh "coffee -c #{c}"
-  end
+task :coffee do
+  sh "coffee -c -w public/js/*.coffee"
 end
-
-task :coffee => $coffee
 
 task :default => [:coffee]
