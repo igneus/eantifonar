@@ -212,8 +212,8 @@ module EAntifonar
 
       head.add_child "<script type=\"text/javascript\">
         $(document).ready(function(){
-          $('.eantifonar-antifona').each(function(){
-            var music = $('.eantifonar-score .lily', $(this)).text();
+          $('.eantifonar-score').each(function(){
+            var music = $('.lily', $(this)).text();
             addChantPlayer($(this), 'click', music);
           });
         });
