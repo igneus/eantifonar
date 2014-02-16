@@ -23,6 +23,21 @@ class ChantPlayerEngine
   constructor: ->
     @_load()
 
+    @notes_dict =
+      c: 0
+      d: 2
+      e: 4
+      f: 5
+      g: 7
+      a: 9
+      bes: 10
+      b: 11
+    @rests_dict =
+      '\\barMin': 0.2
+      '\\barMaior': 0.4
+      '\\barMax': 1
+      '\\barFinalis': 1
+
   # music: string, a block of music in lilypond \relative format
   play: (music) ->
     unless MIDI?
@@ -47,21 +62,7 @@ class ChantPlayerEngine
   # translates _simple_ lilypond source
   # to midi notes
   _lily2midi: (src) ->
-    notes_dict =
-      c: 0
-      d: 2
-      e: 4
-      f: 5
-      g: 7
-      a: 9
-      bes: 10
-      b: 11
-    rests_dict =
-      '\\barMin': 0.2
-      '\\barMaior': 0.4
-      '\\barMax': 1
-      '\\barFinalis': 1
-    console.log(x for x,v of rests_dict)
+    console.log(x for x,v of @rests_dict)
 
     midi = []
     skip_next = false
@@ -91,8 +92,8 @@ class ChantPlayerEngine
       else if c == '\\relative' or c == '\\key' # note-like token with special meaning follows
         skip_next = true
 
-      else if c of rests_dict
-        midi.push([ null, rests_dict[note] ])
+      else if c of @rests_dict
+        midi.push([ null, @rests_dict[note] ])
 
       else
         # the only known durations are 4 and 4.
@@ -109,14 +110,11 @@ class ChantPlayerEngine
           else if m[2] == '4.'
             duration = 2
 
-          unless note of notes_dict
+          unless note of @notes_dict
             console.log 'unknown note ' + note
           else
-            step = notes_dict[note] - notes_dict[last.note]
-            if Math.abs(step) >= (octave_size - 2)
-              octave += Math.sign(step)
-
-            midi_note = base_c + octave * octave_size + notes_dict[note]
+            octave = @_octave(note, last.note, last.octave)
+            midi_note = base_c + octave * octave_size + @notes_dict[note]
             midi.push [ midi_note, duration ]
 
             last =
@@ -128,7 +126,11 @@ class ChantPlayerEngine
 
   # computes octave shift
   _octave: (note, last_note, last_octave) ->
-    return last_octave
+    octave = last_octave
+    step = @notes_dict[note] - @notes_dict[last_note]
+    if Math.abs(step) > 6
+      octave -= Math.sign(step)
+    return octave
 
   # fake implementation - no duration concerns
   # notes: array of ints

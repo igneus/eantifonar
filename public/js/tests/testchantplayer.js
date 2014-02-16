@@ -9,19 +9,31 @@
   });
 
   test_octave = function(name, last_note, last_octave, note, EXPECTED_OCTAVE) {
-    test(name, function(assert) {
+    return test(name, function(assert) {
       var player;
       player = ChantPlayerEngine.get_instance();
-      assert.equal(EXPECTED_OCTAVE, player._octave(note, last_note, last_octave));
-      return null;
+      return assert.equal(player._octave(note, last_note, last_octave), EXPECTED_OCTAVE);
     });
-    return null;
   };
 
-  test_octave('first', 'a', 1, 'a', 1);
+  test_octave('first', 'c', 1, 'c', 1);
 
-  test_octave('second', 'a', 1, 'b', 1);
+  test_octave('second', 'c', 1, 'd', 1);
+
+  test_octave('third', 'c', 1, 'e', 1);
+
+  test_octave('fourth', 'c', 1, 'f', 1);
+
+  test_octave('fifth? no - fourth downwards', 'c', 1, 'g', 0);
+
+  test_octave('sixth? no - third downwards', 'c', 1, 'a', 0);
+
+  test_octave('seventh? no - second downwards', 'c', 1, 'b', 0);
 
   test_octave('second with octave shift', 'b', 1, 'c', 2);
+
+  test_octave('second with downwards octave shift', 'c', 1, 'b', 0);
+
+  test_octave('fourth with octave shift', 'a', 1, 'd', 2);
 
 }).call(this);
