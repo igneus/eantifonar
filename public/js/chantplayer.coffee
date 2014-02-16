@@ -33,17 +33,16 @@ class ChantPlayerEngine
       bes: 10
       b: 11
     @rests_dict =
-      '\\barMin': 0.2
-      '\\barMaior': 0.4
-      '\\barMax': 1
-      '\\barFinalis': 1
+      '\\barMin': 0.5
+      '\\barMaior': 1
+      '\\barMax': 2
+      '\\barFinalis': 3
 
   # music: string, a block of music in lilypond \relative format
   play: (music) ->
     unless MIDI?
-      console.log 'wait'
-      playclbk = => this.play(music)
-      setTimeout(playclbk, 1000)
+      console.log "wait\'n\'retry"
+      setTimeout((=> @play music), 1000)
       return
 
     MIDI.loadPlugin({
@@ -53,10 +52,8 @@ class ChantPlayerEngine
         delay = 1 # play one note every quarter second
         # play the note
         MIDI.setVolume(0, 127)
-        mus = this._lily2midi(music)
-        notes = (x[0] for x in mus)
-        console.log(notes)
-        this._play_sequence(mus)
+        mus = @_lily2midi(music)
+        @_play_sequence(mus)
     })
 
   # translates _simple_ lilypond source
@@ -89,11 +86,11 @@ class ChantPlayerEngine
       else if skip_next
         skip_next = false
 
-      else if c == '\\relative' or c == '\\key' # note-like token with special meaning follows
+      else if c == '\\key' or c == '\\neviditelna' # note-like token with special meaning follows
         skip_next = true
 
       else if c of @rests_dict
-        midi.push([ null, @rests_dict[note] ])
+        midi.push([ null, @rests_dict[c] ])
 
       else
         # the only known durations are 4 and 4.
@@ -140,25 +137,30 @@ class ChantPlayerEngine
       return
 
     i = 0
-    play = => # recursive loop to play pattern
+    last_duration = 0
+    play = => # recursive loop to play a sequence
       duration = notes[i][1] * unit_duration # in seconds
       setTimeout( (=>
-        this._play_single(notes[i][0], duration);
-        i++;
-        if i < notes.length
-          play()
-        ), duration * 1000)
+          @_play_single(notes[i][0], duration);
+          i++;
+          if i < notes.length
+            play()
+        ), last_duration * 1000)
+      last_duration = duration
 
     play()
 
   # note: int
   # duration: int/float - duration in seconds
   _play_single: (note, duration=1) ->
+    unless note?
+      return # note=null: rest
+
     channel = 0
     velocity = 200
     delay = 0
-    MIDI.noteOn(channel, note, velocity, delay)
-    setTimeout((-> MIDI.noteOff(channel, note, delay+0.25)), duration * 1000);
+    MIDI.noteOn(channel, note, velocity, delay) if note?
+    setTimeout((-> MIDI.noteOff(channel, note, delay+0.25) if note?), duration * 1000);
 
   # load necessary libraries
   _load: ->
@@ -172,7 +174,7 @@ class ChantPlayerEngine
       'Base64.js',
       'base64binary.js'
     ]
-    this._load_js(ChantPlayerEngine.libs_dir + l) for l in libs
+    @_load_js(ChantPlayerEngine.libs_dir + l) for l in libs
 
   # load single js library
   _load_js: (src) ->
@@ -183,15 +185,18 @@ class ChantPlayerEngine
     x.parentNode.insertBefore(s, x)
 
 
-unless Math.sign?
-  Math.sign = (num) ->
-    if num == 0
-      return 0
-    return Math.round(num / Math.abs(num))
+# ensure presence of features not yet generally supported we rely on
+do -> Math.sign ?= (num) ->
+  if num == 0
+    return 0
+  return Math.round(num / Math.abs(num))
 
+do -> console.log ?= (stuff) ->
 
-# only necessary for testing
+# make accessible for unit testing (non-public API)
 window.ChantPlayerEngine = ChantPlayerEngine
+
+#== public API
 
 # function to bind a chantplayer to an event of an element
 window.addChantPlayer = (elem, event, music) ->
