@@ -158,7 +158,16 @@ module EAntifonar
     # score HTML
     def chant_score(chant)
       src = File.join('/chants', File.basename(chant.image_path))
-      return "<div class=\"eantifonar-score\"><a href=\"/chant/#{chant.id}\"><img src=\"#{src}\"></a></div>"
+
+      lily = chant.src
+      im = lily.index('\relative')
+      ie = lily.index('}', im)
+      lily = lily[im..ie]
+
+      return "<div class=\"eantifonar-score\">
+        <a href=\"/chant/#{chant.id}\"><img src=\"#{src}\"></a>
+        <div class=\"lily\">#{lily}</div>
+      </div>"
     end
 
     def psalm_tone_for(chant)
@@ -204,7 +213,8 @@ module EAntifonar
       head.add_child "<script type=\"text/javascript\">
         $(document).ready(function(){
           $('.eantifonar-antifona').each(function(){
-            addChantPlayer($(this), 'click', '\\\\relative c\\' { a4 b c d e }');
+            var music = $('.eantifonar-score .lily', $(this)).text();
+            addChantPlayer($(this), 'click', music);
           });
         });
         </script>"

@@ -21,13 +21,11 @@ class ChantPlayerEngine
   # never call the constructor directly,
   # always use ChantPlayerEngine.get_instance
   constructor: ->
-    console.log 'initializing engine'
-    this._load()
+    @_load()
 
+  # music: string, a block of music in lilypond \relative format
   play: (music) ->
-    console.log 'simulating to play '+music
-
-    if not MIDI?
+    unless MIDI?
       console.log 'wait'
       playclbk = => this.play(music)
       setTimeout(playclbk, 1000)
@@ -37,12 +35,12 @@ class ChantPlayerEngine
       soundfontUrl: ChantPlayerEngine.sound_dir,
       instrument: "acoustic_grand_piano",
       callback: =>
-        console.log 'music'
         delay = 1 # play one note every quarter second
         # play the note
         MIDI.setVolume(0, 127)
         mus = this._lily2midi(music)
-        console.log mus
+        notes = (x[0] for x in mus)
+        console.log(notes)
         this._play_sequence(mus)
     })
 
@@ -50,40 +48,104 @@ class ChantPlayerEngine
   # to midi notes
   _lily2midi: (src) ->
     notes_dict =
-      c: 60
-      d: 62
-      e: 64
-      f: 65
-      g: 67
-      a: 68
-      bes: 69
-      b: 70
+      c: 0
+      d: 2
+      e: 4
+      f: 5
+      g: 7
+      a: 9
+      bes: 10
+      b: 11
+    rests_dict =
+      '\\barMin': 0.2
+      '\\barMaior': 0.4
+      '\\barMax': 1
+      '\\barFinalis': 1
+    console.log(x for x,v of rests_dict)
 
     midi = []
-    chunks = src.split(/\s/)
+    skip_next = false
+    chunks = src.split(/\s+/)
+    last = null # last note and octave
+    last_chunk = null # last raw token
+
+    base_c = 60
+    octave_size = 12
+    octave = 0 # c'
+
+    duration = 1
     for c in chunks
-      m = c.match(/^([cdefgab])([1234])*(.*)*$/)
-      if not m?
-        console.log 'dropping '+c
-        continue
-      note = m[1] # for now, drop duration and everything else
-      if not note of notes_dict
-        console.log 'unknown note ' + note
-        continue
-      midi.push notes_dict[note]
+      if last_chunk == '\\relative'
+        if c[1..] == "'"
+          octave = 0
+        else if c[1..] == "''"
+          octave = 1
+
+        last =
+          note: c[0]
+          octave: octave
+
+      else if skip_next
+        skip_next = false
+
+      else if c == '\\relative' or c == '\\key' # note-like token with special meaning follows
+        skip_next = true
+
+      else if c of rests_dict
+        midi.push([ null, rests_dict[note] ])
+
+      else
+        # the only known durations are 4 and 4.
+        # the only known notes are diatonic notes and bes
+        # anything but pitch and duration is ignored
+        m = c.match(/^([cdefga]|bes|b)((4)*(\.*)*).*$/)
+        if not m?
+          console.log 'dropping '+c
+        else
+          note = m[1]
+
+          if m[2] == '4'
+            duration = 1
+          else if m[2] == '4.'
+            duration = 2
+
+          unless note of notes_dict
+            console.log 'unknown note ' + note
+          else
+            step = notes_dict[note] - notes_dict[last.note]
+            if Math.abs(step) >= (octave_size - 2)
+              octave += Math.sign(step)
+
+            midi_note = base_c + octave * octave_size + notes_dict[note]
+            midi.push [ midi_note, duration ]
+
+            last =
+              note: note
+              octave: octave
+
+      last_chunk = c
     return midi
+
+  # computes octave shift
+  _octave: (note, last_note, last_octave) ->
+    return last_octave
 
   # fake implementation - no duration concerns
   # notes: array of ints
   _play_sequence: (notes, unit_duration=0.3) ->
+    if notes.length == 0
+      console.log 'no notes.'
+      return
+
     i = 0
     play = => # recursive loop to play pattern
+      duration = notes[i][1] * unit_duration # in seconds
       setTimeout( (=>
-        this._play_single(notes[i], unit_duration);
+        this._play_single(notes[i][0], duration);
         i++;
         if i < notes.length
           play()
-        ), unit_duration * 1000)
+        ), duration * 1000)
 
     play()
 
@@ -118,6 +180,16 @@ class ChantPlayerEngine
     x = document.getElementsByTagName('script')[0]
     x.parentNode.insertBefore(s, x)
 
+
+unless Math.sign?
+  Math.sign = (num) ->
+    if num == 0
+      return 0
+    return Math.round(num / Math.abs(num))
+
+
+# only necessary for testing
+window.ChantPlayerEngine = ChantPlayerEngine
 
 # function to bind a chantplayer to an event of an element
 window.addChantPlayer = (elem, event, music) ->
