@@ -204,7 +204,7 @@ module EAntifonar
       head.add_child "<script type=\"text/javascript\">
         $(document).ready(function(){
           $('.eantifonar-antifona').each(function(){
-            addChantPlayer($(this), 'click', '\\relative c\\' { a4 b c d e }');
+            addChantPlayer($(this), 'click', '\\\\relative c\\' { a4 b c d e }');
           });
         });
         </script>"
