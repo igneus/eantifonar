@@ -59,8 +59,6 @@ class ChantPlayerEngine
   # translates _simple_ lilypond source
   # to midi notes
   _lily2midi: (src) ->
-    console.log(x for x,v of @rests_dict)
-
     midi = []
     skip_next = false
     chunks = src.split(/\s+/)
@@ -86,37 +84,27 @@ class ChantPlayerEngine
       else if skip_next
         skip_next = false
 
-      else if c == '\\key' or c == '\\neviditelna' # note-like token with special meaning follows
+      else if c == '\\relative' or c == '\\key' or c == '\\neviditelna' # note-like token with special meaning follows
         skip_next = true
 
       else if c of @rests_dict
         midi.push([ null, @rests_dict[c] ])
 
       else
-        # the only known durations are 4 and 4.
-        # the only known notes are diatonic notes and bes
-        # anything but pitch and duration is ignored
-        m = c.match(/^([cdefga]|bes|b)((4)*(\.*)*).*$/)
-        if not m?
-          console.log 'dropping '+c
+        parsed = @_parse_note(c)
+        unless parsed?
+          console.log 'failed to parse ' + c
         else
-          note = m[1]
+          [note, dur, octave_shift] = parsed
+          duration = dur if dur?
+          octave = @_octave(note, last.note, last.octave)
+          octave += octave_shift
+          midi_note = base_c + octave * octave_size + @notes_dict[note]
+          midi.push [ midi_note, duration ]
 
-          if m[2] == '4'
-            duration = 1
-          else if m[2] == '4.'
-            duration = 2
-
-          unless note of @notes_dict
-            console.log 'unknown note ' + note
-          else
-            octave = @_octave(note, last.note, last.octave)
-            midi_note = base_c + octave * octave_size + @notes_dict[note]
-            midi.push [ midi_note, duration ]
-
-            last =
-              note: note
-              octave: octave
+          last =
+            note: note
+            octave: octave
 
       last_chunk = c
     return midi
@@ -128,6 +116,37 @@ class ChantPlayerEngine
     if Math.abs(step) > 6
       octave -= Math.sign(step)
     return octave
+
+  # parses note token
+  # return null on error
+  # otherwise three values: note (string), duration (integer), octave shift (integer)
+  _parse_note: (token) ->
+    # the only known durations are 4 and 4.
+    # the only known notes are diatonic notes and bes
+    # anything but pitch, octave shift and duration is ignored
+    shift = 0
+    duration = null
+
+    m = token.match(/^([cdefga]|bes|b)([',]*)*((4)*(\.*)*).*$/)
+    if not m?
+      return null
+
+    note = m[1]
+    unless note of @notes_dict
+      return null
+
+    if m[2]
+      shift = m[2].length
+      if m[2][0] == ','
+        shift *= -1
+
+    mdur = m[3]
+    if mdur == '4'
+      duration = 1
+    else if mdur == '4.'
+      duration = 2
+
+    return [note, duration, shift]
 
   # fake implementation - no duration concerns
   # notes: array of ints
