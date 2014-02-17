@@ -40,10 +40,11 @@ b { font-weight: normal; } /* bold is much overused at ebreviar */
       }
     }
   }
-}
-.eantifonar-score:hover {
-  .btn-play {
-    opacity: 0.2;
+
+  &:hover {
+    .btn-play {
+      opacity: 0.2;
+    }
   }
 }
 
