@@ -221,6 +221,10 @@ class EAntifonarApp < Sinatra::Base
     request = Typhoeus::Request.new("breviar.sk/"+orig_request.path, request_options)
     request.run
 
+    if request.response.response_code == 404 then
+      raise Sinatra::NotFound
+    end
+
     # modify the response and send it to the client
     response_body = request.response.body
     if html? response_body then

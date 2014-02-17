@@ -42,12 +42,10 @@
 	* print style (without buttons, background)
 
 * player
-	* intuitive play UI control
 	* controls
 		* to adjust tempo
 		* to transpose
 	* don't allow playing more than one piece at a time
-	* rests
 	* at the first piece played the first few notes are always played very quickly. why?
 	* catch the "audio resources unavailable" error and alert the user to reload page
 
