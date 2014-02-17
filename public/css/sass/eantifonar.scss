@@ -18,8 +18,34 @@ b { font-weight: normal; } /* bold is much overused at ebreviar */
 
 /* eantifonar proper content ------------------------------------------------- */
 
-.eantifonar-score a, .eantifonar-score a:hover { background-color: transparent; border-style: none; }
-.eantifonar-score .lily { display: none; }
+.eantifonar-score {
+  position: relative;
+
+  a, a:hover { background-color: transparent; border-style: none; }
+  .lily { display: none; }
+}
+
+// player
+.eantifonar-score {
+  .chantplayer {
+    .btn-play {
+      display: block;
+      position: absolute; top: 0; right: 0;
+      width: 60px; height: 60px;
+      background-color: #ccc; opacity: 0;
+      cursor: pointer;
+
+      &:hover {
+        opacity: 0.8;
+      }
+    }
+  }
+}
+.eantifonar-score:hover {
+  .btn-play {
+    opacity: 0.2;
+  }
+}
 
 .eantifonar-antifona { margin: 10px 0 30px 0; }
 
@@ -39,13 +65,18 @@ b { font-weight: normal; } /* bold is much overused at ebreviar */
     p { margin: 3px 20px; color: white; }
   }
 
-  .menu-item-title { position: absolute; top: 0; width: 130px; text-align: center; }
-  .menu-item-title.a { left: 0; }
-  .menu-item-title.b { left: 130px; }
-  .menu-item-title.c { left: 260px; }
+  .menu-item-title {
+    position: absolute; top: 0; width: 130px; text-align: center;
+
+    &.a { left: 0; }
+    &.b { left: 130px; }
+    &.c { left: 260px; }
+
+    a { color: white; background: none; }
+  }
+
   div:hover .content { display: block; }
   .content:hover { display: block; }
-  .menu-item-title a { color: white; background: none; }
 }
 
 table.chant-detail {

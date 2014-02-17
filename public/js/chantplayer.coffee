@@ -203,6 +203,25 @@ class ChantPlayerEngine
     x = document.getElementsByTagName('script')[0]
     x.parentNode.insertBefore(s, x)
 
+# make accessible for unit testing (non-public API)
+window.ChantPlayerEngine = ChantPlayerEngine
+
+class ChantPlayerControl
+
+  # parent - jquery object to append the control to
+  # music - lilypond source
+  constructor: (@parent, @music) ->
+    @parent.append '<div class="chantplayer"><div class="btn-play">Přehrát</div></div>'
+    wrapper = $('.chantplayer', @parent)
+    btn = $('.btn-play', wrapper)
+    @ui =
+      wrapper: wrapper
+      btn: btn
+    @ui.btn.on 'click', =>
+      @play()
+
+  play: ->
+    ChantPlayerEngine.get_instance().play @music
 
 # ensure presence of features not yet generally supported we rely on
 do -> Math.sign ?= (num) ->
@@ -212,13 +231,8 @@ do -> Math.sign ?= (num) ->
 
 do -> console.log ?= (stuff) ->
 
-# make accessible for unit testing (non-public API)
-window.ChantPlayerEngine = ChantPlayerEngine
-
 #== public API
 
 # function to bind a chantplayer to an event of an element
 window.addChantPlayer = (elem, event, music) ->
-  elem.on event, ->
-    p = ChantPlayerEngine.get_instance()
-    p.play(music)
+  new ChantPlayerControl elem, music
