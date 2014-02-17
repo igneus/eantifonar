@@ -30,23 +30,28 @@ b { font-weight: normal; } /* bold is much overused at ebreviar */
 	background-color: black; color: white; opacity: 0.8;
 	font-family: Arial, sans-serif;
 	position: fixed; top: 0; right: 0;
-}
-#eantifonar-menu .content {
-  width: 400px; height: 40px; position: absolute; left: 0; top: 20px; display: none;
-  padding-top: 20px;
-  background-color: black; color: white; vertical-align: middle;
-}
-#eantifonar-menu .content p { margin: 3px 20px; color: white; }
-#eantifonar-menu .menu-item-title { position: absolute; top: 0; width: 130px; text-align: center; }
-#eantifonar-menu .menu-item-title.a { left: 0; }
-#eantifonar-menu .menu-item-title.b { left: 130px; }
-#eantifonar-menu .menu-item-title.c { left: 260px; }
-#eantifonar-menu div:hover .content { display: block; }
-#eantifonar-menu .content:hover { display: block; }
 
-#eantifonar-menu .menu-item-title a { color: white; background: none; }
+  .content {
+    width: 400px; height: 40px; position: absolute; left: 0; top: 20px; display: none;
+    padding-top: 20px;
+    background-color: black; color: white; vertical-align: middle;
 
-table.chant-detail { margin: 50px 0; width: 100%; border-collapse: collapse; }
-table.chant-detail td { margin: 0; padding: 5px; border: 1px solid black; }
-table.chant-detail td.h { text-align: right; vertical-align: top; }
-table.chant-detail div.ly-source { overflow-x: scroll; width: 600px; height: auto; }
+    p { margin: 3px 20px; color: white; }
+  }
+
+  .menu-item-title { position: absolute; top: 0; width: 130px; text-align: center; }
+  .menu-item-title.a { left: 0; }
+  .menu-item-title.b { left: 130px; }
+  .menu-item-title.c { left: 260px; }
+  div:hover .content { display: block; }
+  .content:hover { display: block; }
+  .menu-item-title a { color: white; background: none; }
+}
+
+table.chant-detail {
+  margin: 50px 0; width: 100%; border-collapse: collapse;
+
+  td { margin: 0; padding: 5px; border: 1px solid black; }
+  td.h { text-align: right; vertical-align: top; }
+  div.ly-source { overflow-x: scroll; width: 600px; height: auto; }
+}
