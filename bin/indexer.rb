@@ -289,8 +289,7 @@ module EAntifonar
 
 
     def lilypond(lypath)
-      #execute_cmd "lilypond -dresolution=120 --png #{lypath}"
-      execute_cmd "lilypond --png #{lypath}"
+      execute_cmd "lilypond --png -dresolution=100 #{lypath}"
     end
 
     def crop_image(imgpath)
