@@ -17,6 +17,22 @@ It forwards some HTTP requests to ebreviar.cz and modifies returned html content
 * lilypond (version compatible with the current In adiutorium music data)
 * ImageMagick
 
+## Install
+
+$ bundle install
+
+## Run
+
+
+1. Clone the [In adiutorium](https://github.com/igneus/In-adiutorium) project e.g. to ~/tmp/In-adiutorium
+
+2. Prepare database of scores:
+$ bundle exec ruby bin/indexer.rb -Rt ~/tmp/In-adiutorium
+
+3. On your development machine start the web application using:
+$ bundle exec rackup
+For deployment on a production server see your server's documentation concerning Rack applications.
+
 ## License
 
 choose freely between GNU/GPL 3.0 or later and MIT
