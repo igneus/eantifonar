@@ -9,6 +9,7 @@ gem 'typhoeus' # http requests
 gem 'nokogiri'
 gem 'mime-types'
 gem 'log4r'
+gem 'rugged' # git - access repo data
 
 gem 'datamapper'
 gem 'dm-sqlite-adapter'
