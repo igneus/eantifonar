@@ -51,6 +51,7 @@ class GitUpdater
     # a possibility.
     diff = repo.diff last_head_commit, new_head_commit
     @updated_files = diff.deltas.collect {|d| d.new_file[:path] }
+    @updated_files.select! {|f| f =~ /\.ly$/ }
   end
 
   # has the last pull (if any) download any new content from github?
