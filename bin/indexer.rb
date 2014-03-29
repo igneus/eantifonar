@@ -151,6 +151,8 @@ module EAntifonar
         raise "Directory with scores '#{@setup[:scores_dir]}' does not exist."
       end
 
+      @setup[:scores_dir] = File.expand_path @setup[:scores_dir]
+
       if @setup[:output_dir] == nil then
         @setup[:output_dir] = File.join(@setup[:scores_dir], 'eantifonar_tmp')
       end
@@ -197,7 +199,6 @@ module EAntifonar
       prepare
 
       @setup[:files_to_process].each do |fpath|
-
         fpath_relative = fpath
         fpath = File.join(@setup[:scores_dir], fpath)
 
