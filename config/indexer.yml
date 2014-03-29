@@ -5,11 +5,14 @@ scores_subdirs:
   - sanktoral
 
 skip_files:
+  - spolecne.ly
   - kancionalove_nespory.ly
   - 'kantikum*.ly'
   - 'kompletar_*.ly' # alternative settings
   - kratkeverse.ly
   - responsoria_nocturna.ly
   - '*_uprostreddne.ly'
-  - zalm*.ly
+  - 'zalm*.ly'
   - dilyresponsorii.ly
+  - zakladni_napevy2.ly
+  - psalmodie.ly

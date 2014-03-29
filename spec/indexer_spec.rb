@@ -21,7 +21,7 @@ describe EAntifonar::Indexer do
 
   before :each do
     @logger = MockLogger.new
-    @indexer = EAntifonar::Indexer.new({:scores_dir => '.'}, @logger)
+    @indexer = EAntifonar::Indexer.new({:scores_dir => 'spec/chantbase'}, @logger)
   end
 
   describe '#score_unique_img_fname' do
@@ -103,5 +103,28 @@ describe EAntifonar::Indexer do
       @indexer.normalized_lyrics(score).should eq LyricTools::normalize(score.lyrics_readable)
       @logger.named_logs[:error].size.should eq 1
     end
+  end
+
+  describe '#collect_files' do
+    subject { @indexer.collect_files }
+
+    it { should include 'nedelniantifony.ly' }
+    it { should include 'antifony/tyden1_1nedele.ly' }
+    it { should include 'spolecne.ly' }
+    it { should include 'psalmodie.ly' }
+
+    it 'does not collect files from directories not listed for indexing' do
+      should_not include 'spolecne/choral.ly'
+    end
+  end
+
+  describe '#apply_blacklist' do
+    subject { @indexer.apply_blacklist @indexer.collect_files }
+
+    it { should include 'nedelniantifony.ly' }
+    it { should include 'antifony/tyden1_1nedele.ly' }
+
+    it { should_not include 'spolecne.ly' }
+    it { should_not include 'psalmodie.ly' }
   end
 end

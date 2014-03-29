@@ -60,6 +60,8 @@ module EAntifonar
         end
       end
 
+      logger.info "Updating changed/new chant #{chant.src_path}##{chant.score_id}"
+
       super(chant, logger)
     end
 
@@ -139,7 +141,10 @@ module EAntifonar
       @setup = DEFAULT_SETUP.dup
       @setup.update(load_config(File.join(@setup[:app_root], @setup[:config_file])))
       @setup.update setup
+    end
 
+    # before we start to produce output
+    def prepare
       if @setup[:scores_dir] == nil then
         raise "Directory with scores not set. Nothing to do."
       elsif not File.directory? @setup[:scores_dir] then
@@ -149,38 +154,43 @@ module EAntifonar
       if @setup[:output_dir] == nil then
         @setup[:output_dir] = File.join(@setup[:scores_dir], 'eantifonar_tmp')
       end
-
-      indexing_strategy_name = @setup[:mode].to_s.capitalize+'IndexingStrategy'
-      @indexing_strategy = EAntifonar.const_get(indexing_strategy_name).new(@setup[:files_to_process])
-
-      if @setup[:files_to_process].empty? then
-        @setup[:files_to_process] = @setup[:scores_subdirs].collect do |subdir|
-          fullpath = File.join(@setup[:scores_dir], subdir, '*.ly')
-          Dir[fullpath].collect {|f| File.join(f.split('/')[-2..-1]) } # we only want 'subdir/file.ly'
-        end.flatten
-
-        # skipping applied only when scanning the whole 'chant-base'
-        skip_files = @setup[:skip_files].collect do |sf|
-          unless File.basename(sf) != sf
-            sf = './' + sf
-          end
-          fullpath = File.join(@setup[:scores_dir], sf)
-          Dir[fullpath].collect {|f| f.sub @setup[:scores_dir], '' }
-        end.flatten
-        @setup[:files_to_process] -= skip_files
-      end
-
-      # definitions prepended to each lilypond chunk to make it standalone compilable
-      @prepend = File.read(File.expand_path('eantifonar_common.ly', File.join(@setup[:app_root], 'data', 'ly')))
-    end
-
-    # before we start to produce output
-    def prepare
       unless File.directory? @setup[:output_dir]
         Dir.mkdir @setup[:output_dir]
       end
 
+      indexing_strategy_name = @setup[:mode].to_s.capitalize+'IndexingStrategy'
+      @indexing_strategy = EAntifonar.const_get(indexing_strategy_name).new(@setup[:files_to_process])
+
+      # no files specified - scan the whole chant-base
+      if @setup[:files_to_process].empty? then
+        @setup[:files_to_process] = collect_files
+      end
+
+      @setup[:files_to_process] = apply_blacklist @setup[:files_to_process]
+
+      # definitions prepended to each lilypond chunk to make it standalone compilable
+      @prepend = File.read(File.expand_path('eantifonar_common.ly', File.join(@setup[:app_root], 'data', 'ly')))
+
       Dir.chdir @setup[:output_dir] # because we will execute programs expecting this
+    end
+
+    # collects and returns a list of all lilypond files
+    # in the chantbase according to the configuration
+    def collect_files
+      files = @setup[:scores_subdirs].collect do |subdir|
+        dir = File.join @setup[:scores_dir], subdir
+        fullpath = File.join dir, '*.ly'
+        Dir[fullpath].collect do |f|
+          f.sub(@setup[:scores_dir]+'/', '')  # we only want 'subdir/file.ly'
+            .sub('./', '') # and only fily.ly if subdir is '.'
+        end
+      end
+      return files.flatten
+    end
+
+    def apply_blacklist(files)
+      # apply blacklist
+      return files - @setup[:skip_files]
     end
 
     def index
@@ -248,12 +258,12 @@ module EAntifonar
               @logger.error "Score with text '#{score.lyrics_readable}' skipped due to a compilation error (see above)."
             end
           end
+
         rescue => ex
-          STDERR.puts "#{File.basename(fpath)}: processing failed"
-          STDERR.puts
-          STDERR.puts ex.message
-          STDERR.puts ex.backtrace.join "\n"
-          STDERR.puts
+          # unexpected error
+          @logger.error "#{File.basename(fpath)}: processing failed in an unexpected way."
+          @logger.error ex.message
+          @logger.error ex.backtrace.join "\n"
         end
       end
     end

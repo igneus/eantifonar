@@ -1,5 +1,10 @@
 # BASIC FEATURES, BUGS
 
+* update-task
+	* should write a new commit file (used in the About view)
+
+* common logger configuration (a part of log initialization is already duplicated - indexer, update-task)
+
 * reference listing of all psalmtones in use
 
 * error pages
