@@ -9,6 +9,8 @@ pray the hours from their (not necessarily smart-)phones using this website inst
 *E-antifonar* is a proxy of *e-breviar* adding chants to it's output.
 It forwards some HTTP requests to ebreviar.cz and modifies returned html content before sending it to the client.
 
+See eantifonar in action at [http://ean.inadiutorium.cz](http://ean.inadiutorium.cz)
+
 ## Prerequisites
 
 * ruby 2.0.x (used for development; earlier versions not tested)
@@ -23,10 +25,9 @@ $ bundle install
 
 ## Run
 
-
 1. Clone the [In adiutorium](https://github.com/igneus/In-adiutorium) project e.g. to ~/tmp/In-adiutorium
 
-2. Prepare database of scores:
+2. Prepare database of scores: (Two hours or more are a normal amount of time needed for this operation.)
 $ bundle exec ruby bin/indexer.rb -Rt ~/tmp/In-adiutorium
 
 3. On your development machine start the web application using:
