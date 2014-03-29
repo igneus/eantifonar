@@ -11,7 +11,13 @@ set :branch, 'master'
 # set :pty, true
 
 # set :linked_files, %w{config/database.yml}
-set :linked_dirs, %w{tmp db log public/chants}
+set :linked_dirs, [
+  'tmp',
+  'db', # where the sqlite db is stored
+  'log',
+  'public/chants', # scores rendered as png images
+  'chantbase' # git repo of the In adiutorium project - used for automatic updates
+]
 
 # set :default_env, { path: "/opt/ruby/bin:$PATH" }
 # set :keep_releases, 5
