@@ -9,7 +9,7 @@ require 'rugged'
 require_relative '../lib/eantifonar/config'
 
 # path to the local git repository of the In adiutorium project
-repo_path = '/home/igneus/tmp/In-adiutorium-working'
+repo_path = ARGV.shift
 
 class GitUpdater
 
