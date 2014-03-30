@@ -29,11 +29,8 @@ class EAntifonarApp < Sinatra::Base
       @wrapped_domains[d] = {:full => full, :regex => Regexp.new('^'+full+'/*')}
     end
 
-    decorator_logger = Log4r::Logger.new 'decorator'
-    decorator_logger.outputters = [
-      Log4r::StderrOutputter.new('stderr'),
-      Log4r::FileOutputter.new('fo', :filename => EAntifonar::CONFIG.decorator_log)
-    ]
+    EAntifonar.init_logging
+    decorator_logger = Log4r::Logger['decorator']
     @decorator = Decorator.new decorator_logger
   end
 

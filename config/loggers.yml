@@ -1,0 +1,37 @@
+---
+# configuration of log4r loggers
+log4r_config:
+
+  outputters:
+
+    - name: stderr
+      type: StderrOutputter
+      formatter:
+        type: PatternFormatter
+        pattern: '%l: %m'
+
+    - name: indexing_logfile
+      type: FileOutputter
+      filename: log/indexing.log
+      formatter:
+        type: PatternFormatter
+        pattern: '%d %-6l: %m'
+
+    - name: decorator_logfile
+      type: FileOutputter
+      filename: log/decorator.log
+      formatter:
+        type: PatternFormatter
+        pattern: '%d %-6l: %m'
+
+  loggers:
+
+    - name: indexing
+      outputters:
+        - indexing_logfile
+        - stderr
+
+    - name: decorator
+      outputters:
+        - decorator_logfile
+        - stderr

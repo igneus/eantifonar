@@ -4,6 +4,7 @@
 # and compile new scores if needed
 
 require 'log4r'
+require 'logr4/yamlconfigurator'
 require 'rugged'
 
 require_relative '../lib/eantifonar/config'
@@ -60,12 +61,8 @@ class GitUpdater
   end
 end
 
-# copied from indexer; TODO: refactor
-logger = Log4r::Logger.new 'indexing'
-logger.outputters = [
-  Log4r::StderrOutputter.new('stderr'),
-  Log4r::FileOutputter.new('fo', :filename => EAntifonar::CONFIG.indexing_log)
-]
+EAntifonar.init_logging
+logger = Log4r::Logger['indexing']
 
 logger.info 'Checking github for new content.'
 git = GitUpdater.new repo_path, logger

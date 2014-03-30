@@ -9,6 +9,7 @@ require 'data_mapper'
 require 'fileutils'
 require 'optparse'
 require 'log4r'
+require 'log4r/yamlconfigurator'
 require 'open3'
 
 require_relative '../lib/lilytools/musicreader'
@@ -427,11 +428,8 @@ end # module
 
 
 if $0 == __FILE__ then
-  logger = Log4r::Logger.new 'indexing'
-  logger.outputters = [
-    Log4r::StderrOutputter.new('stderr'),
-    Log4r::FileOutputter.new('fo', :filename => EAntifonar::CONFIG.indexing_log)
-  ]
+  EAntifonar.init_logging
+  logger = Log4r::Logger['indexing']
 
   options = {}
 
