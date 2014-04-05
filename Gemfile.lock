@@ -91,6 +91,8 @@ GEM
       rack
     rack-protection (1.5.1)
       rack
+    rack-test (0.6.2)
+      rack (>= 1.0)
     rake (10.1.1)
     rspec (2.14.1)
       rspec-core (~> 2.14.0)
@@ -135,6 +137,7 @@ DEPENDENCIES
   mime-types
   nokogiri
   rack-coffee
+  rack-test
   rspec
   rugged
   sass

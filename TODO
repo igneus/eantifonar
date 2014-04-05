@@ -1,6 +1,5 @@
 # BASIC FEATURES, BUGS
 
-* only redirect requests where it makes sense
 * database browsing to a separate controller?
 * modularize decorator? (It would be nice to have the player pluggable and possibly other parts, too.)
 

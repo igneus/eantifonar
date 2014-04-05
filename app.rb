@@ -45,10 +45,6 @@ class EAntifonarApp < Sinatra::Base
     return static_content request
   end
 
-  get '/' do
-    redirect '/cgi-bin/l.cgi?qt=pdnes&amp;j=cz&amp;c=cz', 302
-  end
-
   get '/about.html' do
     rev = nil
     rev_file = File.join('public', 'REVISION')
@@ -87,12 +83,11 @@ class EAntifonarApp < Sinatra::Base
 
   ## forwarded routes
 
-  get '*' do
-    forward_request request, :get, params
+  get '/' do
+    redirect '/cgi-bin/l.cgi?qt=pdnes&amp;j=cz&amp;c=cz', 302
   end
 
-  # TODO this route is maybe synonym to the previous?
-  get '*/*' do
+  get '*' do
     forward_request request, :get, params
   end
 
@@ -188,9 +183,32 @@ class EAntifonarApp < Sinatra::Base
     return [200, { 'Content-Type' => content_type }, content]
   end
 
+  # determine if a request to the given route should be forwarded
+  # to the external site or not
+  def forward?(route)
+    if route.start_with? '/cgi-bin/l.cgi' then
+      return true
+    end
+
+    whitelist = %w{
+      /breviar.css
+      /ebreviar-cz.css
+    }
+    if whitelist.include? route then
+      return true
+    end
+
+    # by default don't forward
+    return false
+  end
+
   # forwards a request to the external site,
   # returns a valid response as expected by Sinatra (the Array variant)
   def forward_request(orig_request, method, params={})
+    unless forward? orig_request.path
+      raise Sinatra::NotFound
+    end
+
     method = orig_request.request_method.downcase.to_sym
 
     # compose and run a request on the shadowed server

@@ -16,6 +16,10 @@ RSpec.configure do |config|
   config.order = 'random'
 end
 
+require 'rack/test'
+
 require_relative '../bin/indexer'
 
 include EAntifonar
+
+ENV['RACK_ENV'] = 'test'
