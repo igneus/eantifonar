@@ -1,7 +1,6 @@
 # encoding: UTF-8
 
 require 'sinatra/base'
-require 'typhoeus'
 require 'nokogiri'
 require 'mime/types'
 require 'yaml'
@@ -10,7 +9,7 @@ require 'log4r'
 
 require 'data_mapper'
 
-%w{config db_setup lyrictools decorator helpers}.each do |r|
+%w{config db_setup lyrictools decorator helpers proxies}.each do |r|
   require_relative File.join('lib', 'eantifonar', r)
 end
 
@@ -32,6 +31,8 @@ class EAntifonarApp < Sinatra::Base
     EAntifonar.init_logging
     decorator_logger = Log4r::Logger['decorator']
     @decorator = Decorator.new decorator_logger
+
+    @proxy = HTTPProxy.new site: 'breviar.sk'
   end
 
   Encoding.default_external = 'UTF-8' if "1.9".respond_to?(:encoding)
@@ -209,37 +210,24 @@ class EAntifonarApp < Sinatra::Base
       raise Sinatra::NotFound
     end
 
-    method = orig_request.request_method.downcase.to_sym
+    response = @proxy.handle_request method, orig_request, params
+    code, headers, body = response
 
-    # compose and run a request on the shadowed server
-    request_options = {
-      :method => method,
-      :headers => { 'User-Agent' => orig_request.env['HTTP_USER_AGENT'] },
-    }
-    if method == :post then
-      request_options[:body] = params
-    else
-      request_options[:params] = params
-    end
-    request = Typhoeus::Request.new("breviar.sk/"+orig_request.path, request_options)
-    request.run
-
-    if request.response.response_code == 404 then
+    if code == 404 then
       raise Sinatra::NotFound
     end
 
-    # modify the response and send it to the client
-    response_body = request.response.body
-    if html? response_body then
+    # modify the response
+    if html? body then
       orig_url = 'http://breviar.sk'+orig_request.path+'?'+::URI.encode_www_form(params)
       STDERR.puts orig_url
-      response_body = modify_page_content(response_body, orig_url)
+      body = modify_page_content(body, orig_url)
     end
 
-    response_headers = forwarded_params = copy_keys(request.response.headers, ['Date', 'Content-Type'])
+    # drop most of the headers
+    headers = copy_keys(headers, ['Date', 'Content-Type'])
 
-    forwarded_response = [request.response.code, response_headers, response_body]
-    return forwarded_response
+    return [code, headers, body]
   end
 
   def modify_page_content(content, request_path)
