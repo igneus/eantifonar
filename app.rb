@@ -9,15 +9,15 @@ require 'haml'
 require 'log4r'
 
 require 'data_mapper'
-require_relative 'lib/eantifonar/config'
-require_relative 'lib/eantifonar/db_setup'
 
-require_relative 'lib/eantifonar/lyrictools'
-require_relative 'lib/eantifonar/decorator'
+%w{config db_setup lyrictools decorator helpers}.each do |r|
+  require_relative File.join('lib', 'eantifonar', r)
+end
 
 class EAntifonarApp < Sinatra::Base
 
   include EAntifonar
+  include EAntifonar::Helpers
 
   def initialize
     super()
@@ -250,24 +250,6 @@ class EAntifonarApp < Sinatra::Base
 
     @decorator.decorate doc, request_path # insert scores etc.
     return doc.to_html(:encoding => 'utf-8')
-  end
-
-  # detects if the downloaded content is html
-  # (weak detection sufficient for the web we are working with)
-  def html?(response_body)
-    response_body.start_with? '<!DOCTYPE'
-  end
-
-  # returns a new Hash containing only pairs with a key
-  # included in a given list
-  def copy_keys(hash, keys)
-    r = {}
-    keys.each do |k|
-      if hash.include? k then
-        r[k] = hash[k]
-      end
-    end
-    return r
   end
 
   ## 'main': start the server if ruby file executed directly

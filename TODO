@@ -1,5 +1,6 @@
 # BASIC FEATURES, BUGS
 
+* only redirect requests where it makes sense
 * database browsing to a separate controller?
 * modularize decorator? (It would be nice to have the player pluggable and possibly other parts, too.)
 
@@ -21,7 +22,7 @@
 
 * caching of decorated pages to handle requests for identical content without redundant processing
 
-* fix the 'open door' in static_content
+* fix the 'open door' in static_content // prove'n'test there is no
 
 * move hardcoded paths to a shared config object
 
