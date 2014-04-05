@@ -18,7 +18,7 @@ group :indexer do
   gem 'rugged' # git - access repo data
 end
 
-group :testing do
+group :test do
   gem 'rspec'
   gem 'rack-test'
 end
