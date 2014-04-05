@@ -1,7 +1,7 @@
 %h1= title
 
 .filter
-  %form{:method => 'post', :action => '/chant'}
+  %form{:method => 'get', :action => '/chant'}
     %input{:type => 'hidden', :name => 'filtered', :value => 'true'}
 
     %label

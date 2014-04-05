@@ -41,15 +41,7 @@ class EAntifonarApp < Sinatra::Base
 
   ## routes for static content
 
-  get '*.png' do
-    return static_content request
-  end
-
-  get '*.ico' do
-    return static_content request
-  end
-
-  get '*.js' do
+  get /\.(png|ico|js)$/ do
     return static_content request
   end
 
@@ -70,10 +62,6 @@ class EAntifonarApp < Sinatra::Base
   ## browsing database content
 
   get '/chant' do
-    chant_list params
-  end
-
-  post '/chant' do
     chant_list params
   end
 
