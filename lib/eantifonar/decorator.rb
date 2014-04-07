@@ -5,8 +5,10 @@ module EAntifonar
   # decorates HTML documents - pages from ebreviar.cz - adding chants
   class Decorator
 
-    def initialize(logger)
+    # crash - in some situations prefer loud crash over graceful overcoming of an error state
+    def initialize(logger, crash=false)
       @logger = logger
+      @crash = crash
     end
 
     # accepts a Nokogiri html document; modifies it directly
@@ -47,7 +49,6 @@ module EAntifonar
     end
 
     def decorate_antiphon(node, chants_inserted={})
-      #node['class'] = 'eantifonar-antifona'
       ant_text = node.css('b').text # text together with the leading rubric
 
       # try to get pure antiphon text
@@ -58,7 +59,11 @@ module EAntifonar
         end
       end
 
-      chants = Chant.all(:lyrics_cleaned => ant_text, :chant_type => :ant)
+      if chants_inserted.has_key? ant_text then
+        chants = chants_inserted[ant_text]
+      else
+        chants = Chant.all(:lyrics_cleaned => ant_text, :chant_type => :ant)
+      end
 
       ant = Nokogiri::XML::Node.new('div', node.document)
       ant['class'] = 'eantifonar-antifona'
@@ -67,45 +72,49 @@ module EAntifonar
       # insert the decorated antiphon in the document
       node.replace ant
 
-      if chants_inserted.include? ant_text and
-          not (ant.previous_element['class'] == 'psalm' and ant.previous_element.previous_element['class'] == 'psalm') then
-        # this is a second occurrence of an antiphon for a single psalm - don't repeat the score.
+      antiphon_after_single_psalm = (not (
+        ant.previous_element['class'] == 'psalm' and
+        ant.previous_element.previous_element['class'] == 'psalm'
+      ))
+      first_antiphon_occurrence = (not chants_inserted.has_key? ant_text)
+
+      if (not first_antiphon_occurrence) and antiphon_after_single_psalm then
         return nil
       end
 
-      if chants.size > 0 then
-        chant = chants.first # select one from a possibly larger set
-        ant.add_child(chant_annotation(chant))
-        ant.add_child(chant_score(chant))
-      else
+      if chants.size == 0 then
         @logger.error "Chant not found for ant. '#{ant_text}'."
-      end
-
-      # code below only makes sense if the music was found and for the first occurrence of each antiphon
-      if chants.size == 0 or
-          chants_inserted.include? ant_text then
         return
       end
 
-      # add psalm tone
-      ps = ant.next_element
-      if ps['class'].is_a? String and ps['class'].include? 'psalm' then
-        # at the beginning of a psalm / canticle there are centers and divs
-        # with titles and Scripture coordinates
-        first_verse = ps.xpath('./p[1]').first
-        if first_verse.first_element_child.name == 'i' then
-          first_verse = first_verse.next
-        end
-        first_verse.before psalm_tone_for chant
-      else
-        # psalm not found. No surprise, ebreviar's markup is neither semantic,
-        # nor consistent. Let's insert the psalm tone directly after the antiphon.
-        ant.after psalm_tone_for chant
+      chant = chants.first # select one from a possibly larger set
+
+      # insert antiphon score
+      ant.add_child(chant_annotation(chant))
+      ant.add_child(chant_score(chant))
+
+      unless first_antiphon_occurrence
+        return
       end
 
       chants_inserted[ant_text] = chant
+
+      # insert psalm tone
+      ps = ant.next_element
+      if ps['class'].is_a? String and ps['class'].include? 'psalm' then
+        insert_rel = ps.xpath('./p[1]').first
+        insert = :before
+      else
+        # psalm not found. Let's insert the psalm tone directly after the antiphon.
+        insert_rel = ant
+        insert = :after
+      end
+      insert_rel.send insert, psalm_tone_for(chant)
     rescue => ex
       @logger.error "#{ex.class} while decorating antiphon '#{node.text}': "+ex.message
+      if @crash then
+        raise
+      end
     end
 
     def decorate_responsory(node)
@@ -142,6 +151,9 @@ module EAntifonar
       end
     rescue => ex
       @logger.error "#{ex.class} while decorating responsory '#{node.text}': "+ex.message
+      if @crash then
+        raise
+      end
     end
 
     def chant_annotation(chant)

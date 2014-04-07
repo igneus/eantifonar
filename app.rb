@@ -30,7 +30,7 @@ class EAntifonarApp < Sinatra::Base
 
     EAntifonar.init_logging
     decorator_logger = Log4r::Logger['decorator']
-    @decorator = Decorator.new decorator_logger
+    @decorator = Decorator.new decorator_logger, self.class.development?
 
     @proxy = HTTPProxy.new site: 'breviar.sk'
   end

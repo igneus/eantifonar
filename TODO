@@ -3,6 +3,8 @@
 * database browsing to a separate controller?
 * modularize decorator? (It would be nice to have the player pluggable and possibly other parts, too.)
 
+* integration tests testing if ebreviar's web interface has changed; they should be run daily, results displayed on eantifonar and reported to me
+
 * update-task
 	* should write a new commit file (used in the About view)
 * player - fix broken
