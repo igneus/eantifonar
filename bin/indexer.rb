@@ -14,7 +14,7 @@ require 'open3'
 
 require_relative '../lib/lilytools/musicreader'
 require_relative '../lib/eantifonar/config'
-require_relative '../lib/eantifonar/db_setup'
+require_relative '../lib/eantifonar/model'
 require_relative '../lib/eantifonar/lyrictools'
 
 DataMapper::Model.raise_on_save_failure = true
