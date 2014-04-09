@@ -13,6 +13,8 @@ module EAntifonar
 
     # accepts a Nokogiri html document; modifies it directly
     def decorate(doc, request_path)
+      @page = EBreviarPage.new doc
+
       # log title of the day + hour
       hour_heading = doc.css('h2').children.collect {|h2| h2.text.strip }.select {|h2| h2 != '' }.join(' : ')
       begin
@@ -22,7 +24,7 @@ module EAntifonar
       end
       @logger.info "Decorating: "+hour_heading
 
-      add_title doc, hour_heading
+      add_title hour_heading
       add_css doc
       add_js doc
       add_menu doc
@@ -31,36 +33,25 @@ module EAntifonar
       chants_inserted = {} # keeps track of inserted chants to avoid useless repetition
 
       # tag antiphons
-      doc.css('p > b > span.red').each_with_index do |span,ant_i|
-        if span.text.downcase.include? 'ant' then
-          p = span.parent.parent
-          decorate_antiphon p, chants_inserted
-        end
+      @page.each_antiphon do |a1,a2,psalms|
+        decorate_antiphon a1, chants_inserted, true
+        decorate_antiphon a2, chants_inserted, false, psalms.size
       end
 
-      doc.css('p > span.redsmall').each do |span|
-        if span.text == 'ZPĚV PO KRÁTKÉM ČTENÍ' then
-          p = span.parent
-          decorate_responsory p
-        end
+      resp = @page.responsory
+      if resp then
+        decorate_responsory resp
       end
 
       return doc
     end
 
-    def decorate_antiphon(node, chants_inserted={})
-      ant_text = node.css('b').text # text together with the leading rubric
-
-      # try to get pure antiphon text
-      node.css('b').children.each do |c|
-        if c.is_a? Nokogiri::XML::Text and c.text.strip.size > 0 then
-          ant_text = LyricTools.normalize c.text
-          break
-        end
-      end
+    def decorate_antiphon(node, chants_inserted={}, first_antiphon_occurrence=true, num_psalms=1)
+      ant_text = LyricTools.normalize @page.antiphon_text(node)
+      @logger.info ant_text
 
       if chants_inserted.has_key? ant_text then
-        chants = chants_inserted[ant_text]
+        chants = [ chants_inserted[ant_text] ]
       else
         chants = Chant.all(:lyrics_cleaned => ant_text, :chant_type => :ant)
       end
@@ -72,16 +63,6 @@ module EAntifonar
       # insert the decorated antiphon in the document
       node.replace ant
 
-      antiphon_after_single_psalm = (not (
-        ant.previous_element['class'] == 'psalm' and
-        ant.previous_element.previous_element['class'] == 'psalm'
-      ))
-      first_antiphon_occurrence = (not chants_inserted.has_key? ant_text)
-
-      if (not first_antiphon_occurrence) and antiphon_after_single_psalm then
-        return nil
-      end
-
       if chants.size == 0 then
         @logger.error "Chant not found for ant. '#{ant_text}'."
         return
@@ -90,8 +71,10 @@ module EAntifonar
       chant = chants.first # select one from a possibly larger set
 
       # insert antiphon score
-      ant.add_child(chant_annotation(chant))
-      ant.add_child(chant_score(chant))
+      if first_antiphon_occurrence or num_psalms > 1 then
+        ant.add_child(chant_annotation(chant))
+        ant.add_child(chant_score(chant))
+      end
 
       unless first_antiphon_occurrence
         return
@@ -118,16 +101,7 @@ module EAntifonar
     end
 
     def decorate_responsory(node)
-      r_text = node.xpath('./b[1]').first.text.sub('O.', '')
-      # second last full-stop - beginning of the response indicating repetition - remove what follows
-      rep_i = r_text.rindex('.', r_text.rindex('.')-1)
-      r_text = r_text[0..rep_i]
-
-      v_text = node.xpath('./b[2]').first.text.sub('V.', '')
-      r2i = v_text.rindex '*' # second part of the response repeated - remove what follows
-      v_text = v_text[0..r2i]
-
-      resp_text = r_text + v_text
+      resp_text = @page.responsory_short_text node
       resp_text = LyricTools.normalize resp_text
 
       chants = Chant.all(:lyrics_cleaned => resp_text, :chant_type => :resp)
@@ -192,8 +166,8 @@ module EAntifonar
       return "<div class=\"eantifonar-psalm-tone\"><img src=\"/chants/psalmodie_#{t_handy}.png\" alt=\"#{t_pretty}\" /></div>"
     end
 
-    def add_title(doc, title)
-      doc.xpath('/html/head/title').first.content = title + ' @ E-antifonář'
+    def add_title(title)
+      @page.title.content = title + ' @ E-antifonář'
     rescue
       # title not found in the document; doesn't matter
     end

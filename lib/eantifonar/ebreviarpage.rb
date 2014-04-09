@@ -10,8 +10,9 @@ module EAntifonar
   class EBreviarPage
 
     # doc - expected Nokogiri::HTML
-    def initialize(doc)
+    def initialize(doc, crash=false)
       @doc = doc
+      @crash = crash
     end
 
     attr_reader :doc
@@ -41,7 +42,7 @@ module EAntifonar
       occurrence1 = occurrence2 = nil
       psalms = []
 
-      return @doc.css('p > b > span.red').each_with_index do |span,ant_i|
+      return @doc.xpath("//p/b/span[@class='red'][1]").each_with_index do |span,ant_i|
         if span.text.downcase.include? 'ant' then
           p = span.parent.parent
           if ant_i % 2 == 0 then # we start with 0
@@ -54,6 +55,10 @@ module EAntifonar
             end
           else
             occurrence2 = p
+
+            if @crash && antiphon_text(occurrence1) != antiphon_text(occurrence2) then
+              raise RuntimeError.new("A pair of non-matching antiphons found '#{occurrence1.text}', '#{occurrence2.text}'")
+            end
 
             yield occurrence1, occurrence2, psalms
 
@@ -103,6 +108,18 @@ module EAntifonar
         end
       end
       return r.join(' ')
+    end
+
+    # only response + verse
+    def responsory_short_text(resp)
+      # this would lead to unexpected results for responsories
+      # including fullstop in either response or verse.
+      # TODO: check if there are any.
+      full = responsory_text resp
+      end_with_verse = full.split(/\s*\*\s*/)[0..1].join(' ')
+      without_rep = end_with_verse.split('.')
+      without_rep.delete_at 1 # remove the shortenned repetition following the response
+      return without_rep.join('.')
     end
   end
 end

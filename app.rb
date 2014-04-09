@@ -9,7 +9,7 @@ require 'log4r'
 
 require 'data_mapper'
 
-%w{config model lyrictools decorator helpers proxies}.each do |r|
+%w{config model lyrictools ebreviarpage decorator helpers proxies}.each do |r|
   require_relative File.join('lib', 'eantifonar', r)
 end
 

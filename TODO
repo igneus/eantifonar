@@ -1,5 +1,10 @@
 # BASIC FEATURES, BUGS
 
+* psalm tones:
+	* separate model;
+	* should have chantplayer, too
+	* reference listing of all psalmtones in use
+
 * database browsing to a separate controller?
 * modularize decorator? (It would be nice to have the player pluggable and possibly other parts, too.)
 
@@ -9,7 +14,6 @@
 	* should write a new commit file (used in the About view)
 * player - fix broken
 
-* reference listing of all psalmtones in use
 
 * error pages
 
