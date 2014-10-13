@@ -1,5 +1,10 @@
 # BASIC FEATURES, BUGS
 
+* make an independent service consisting of indexer and a rich human- as well
+   as machine-friendly interface to the database;
+   make eantifonar client of this service obtaining scores by calls to
+   a RESTful API
+
 * psalm tones:
 	* separate model;
 	* should have chantplayer, too
