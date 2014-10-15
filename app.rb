@@ -56,32 +56,6 @@ class EAntifonarApp < Sinatra::Base
     haml :about, :locals => {:git_revision => rev}
   end
 
-  ## browsing database content
-
-  get '/chant' do
-    chant_list params
-  end
-
-  get '/chant/:id' do |id|
-    id = id.to_i
-    p id
-    chant = Chant.get(id)
-    if chant == nil then
-      raise Sinatra::NotFound
-    end
-
-    haml :chant, :locals => { :chant => chant }
-  end
-
-  get '/chantsrc/*' do |path|
-    p path
-    chants = Chant.all(:src_path => path, :order => [:id.asc])
-    if chants.empty? then
-      raise Sinatra::NotFound
-    end
-    haml :'chant.list', :locals => { :title => path, :chants => chants }
-  end
-
   ## forwarded routes
 
   get '/' do
@@ -103,71 +77,6 @@ class EAntifonarApp < Sinatra::Base
   end
 
   ## methods
-
-  def chant_list(params)
-    pieces_per_page = 50
-
-    page = params[:page] or 1
-    page = page.to_i
-    page = 1 unless page > 0
-
-    query = {
-      :order => [:lyrics_cleaned.asc],
-    }
-
-    filter = {}
-
-    if params[:filtered] then
-      # values for the db query
-      filter[:text] = params[:text] if params[:text].is_a? String and params[:text] != ''
-      types = [:ant, :resp, :other].select {|t| params["type_#{t.to_s}"] }
-      filter[:chant_type] = types if types.size > 0
-      filter[:src_path] = params[:src_path] if params[:src_path].is_a? String and params[:src_path] != ''
-
-      if filter.has_key? :text then
-        filter[:text].split(' ').each do |chunk|
-          query.update({ :lyrics_cleaned.like => "%#{chunk}%" })
-        end
-      end
-      [:chant_type, :src_path].each do |field|
-        query.update({ field => filter[field] }) if filter.has_key? field
-      end
-    end
-
-    # values to generate the form
-    unless filter.has_key? :text
-      filter[:text] = ''
-    else
-      filter[:text] = params[:text]
-    end
-    filter[:src_path] = '' unless filter[:src_path]
-    filter[:chant_type] = [] unless filter[:chant_type]
-
-    STDERR.puts filter.inspect
-
-    pieces = Chant.count(query) # total size
-    pages = (pieces.to_f / pieces_per_page).ceil
-
-    # limit output size
-    query.update({
-      :limit => pieces_per_page,
-
-      # page 0 doesn't make sense, so we add 1 in the view
-      # and substract it here to make pages start with 1 in the front-end
-      :offset => (page - 1) * pieces_per_page
-    })
-
-    haml :'chant.list', :locals => {
-      :title => 'Všechny zpěvy',
-
-      :chants => Chant.all(query),
-      :files => Chant.all(:fields => [:src_path], :unique => true, :order => [:src_path.asc]).collect {|c| c.src_path },
-      :chants_count => pieces,
-
-      :pages => pages,
-      :filter => filter
-    }
-  end
 
   # finds and returns static content;
   # looks for local content and eventually returns it
