@@ -131,14 +131,7 @@ module EAntifonar
     end
 
     def chant_annotation(chant)
-      an = ''
-      if chant.header.has_key? 'modus' then
-        an += chant.header['modus']
-        if chant.header.has_key? 'differentia' then
-          an += '.' + chant.header['differentia']
-        end
-      end
-      return "<div class=\"eantifonar-chant-annotation\">#{an}</div>"
+      return "<div class=\"eantifonar-chant-annotation\">#{chant.annotation}</div>"
     end
 
     # score HTML

@@ -25,4 +25,15 @@ class Chant
     super(*args)
     self.created = Time.now
   end
+
+  def annotation
+    an = ''
+    if header.has_key? 'modus' then
+      an += header['modus']
+      if header.has_key? 'differentia' then
+        an += '.' + header['differentia']
+      end
+    end
+    return an
+  end
 end
