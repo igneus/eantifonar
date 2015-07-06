@@ -22,14 +22,15 @@ module EAntifonar
     end
 
     def responsory
-      @doc.css('p > span.redsmall').each do |span|
-        if span.text == 'ZPĚV PO KRÁTKÉM ČTENÍ' then
-          return span.parent
-        end
+      responses = @doc.css('div.respons')
+
+      # "Deus in adiutorium meum" has the same wrapper
+      # as responsory after the short reading
+      if responses.size < 2
+        return nil
       end
 
-      # nothing found
-      return nil
+      return responses[1]
     end
 
     # For each antiphon yields the first occurrence,
@@ -42,9 +43,9 @@ module EAntifonar
       occurrence1 = occurrence2 = nil
       psalms = []
 
-      return @doc.xpath("//p/b/span[@class='red'][1]").each_with_index do |span,ant_i|
+      return @doc.xpath("//p/span[@class='red'][1]").each_with_index do |span,ant_i|
         if span.text.downcase.include? 'ant' then
-          p = span.parent.parent
+          p = span.parent
           if ant_i % 2 == 0 then # we start with 0
             occurrence1 = p
 
@@ -86,7 +87,7 @@ module EAntifonar
     # helper methods to access cleaned texts of important nodes
 
     def antiphon_text(ant)
-      ant.xpath('b').first.children.collect do |c|
+      ant.children.collect do |c|
         if c.kind_of? Nokogiri::XML::Text and not c.text.strip.empty? then
           return c.text \
             .gsub("\u00a0", ' ') # replace non-breaking spaces
@@ -98,7 +99,7 @@ module EAntifonar
 
     def responsory_text(resp)
       r = []
-      resp.xpath('b').each do |b|
+      resp.xpath('p').each do |b|
         b.children.collect do |c|
           if (c.kind_of? Nokogiri::XML::Text and not c.text.strip.empty?) or
               (c.name == 'span' and c.text == '*') then

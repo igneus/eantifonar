@@ -108,18 +108,15 @@ module EAntifonar
 
       resp = Nokogiri::XML::Node.new('div', node.document)
       resp['class'] = 'eantifonar-responsorium'
-      resp.add_child node.dup # the original <p> containing the antiphon text
+      resp.add_child node.dup # the original <div> containing the responsory text
 
       # insert the decorated responsory in the document
       node.replace resp
 
       if chants.size > 0 then
         chant = chants.first # select one from a possibly larger set
-        # urgh ... title of the Gospel canticle is inside the same <p>
-        # as responsory
-        resp_last_verse = resp.xpath('./p/b[2]').first
-        resp_last_verse.after chant_score(chant)
-        resp_last_verse.after chant_annotation(chant)
+        resp.add_child chant_annotation(chant)
+        resp.add_child chant_score(chant)
       else
         @logger.error "Chant not found for resp. '#{resp_text}'."
       end
