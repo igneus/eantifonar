@@ -1,0 +1,3 @@
+# exclude testing lilypond files from github language statistics
+spec/chantbase/* linguist-vendored
+spec/chantbase/*/* linguist-vendored
