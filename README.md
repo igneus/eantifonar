@@ -28,11 +28,20 @@ $ bundle install
 1. Clone the [In adiutorium](https://github.com/igneus/In-adiutorium) project e.g. to ~/tmp/In-adiutorium
 
 2. Prepare database of scores: (Two hours or more are a normal amount of time needed for this operation.)
-$ bundle exec ruby bin/indexer.rb -Rt ~/tmp/In-adiutorium
+
+    $ bundle exec ruby bin/indexer.rb -Rt ~/tmp/In-adiutorium
 
 3. On your development machine start the web application using:
-$ bundle exec rackup
+
+    $ bundle exec rackup
+
+Or, for automatic code reloading:
+
+    $ bundle exec shotgun
+
 For deployment on a production server see your server's documentation concerning Rack applications.
+
+Or
 
 ## License
 
