@@ -141,7 +141,7 @@ module EAntifonar
       lily = lily[im..ie]
 
       return "<div class=\"eantifonar-score\">
-        <a href=\"/chant/#{chant.id}\"><img src=\"#{src}\"></a>
+        <img src=\"#{src}\">
         <div class=\"lily\">#{lily}</div>
       </div>"
     end
