@@ -62,6 +62,10 @@ class EAntifonarApp < Sinatra::Base
     redirect '/cgi-bin/l.cgi?qt=pdnes&amp;j=cz&amp;c=cz', 302
   end
 
+  get '/robots.txt' do
+    erb :robots, content_type: 'text/plain'
+  end
+
   get '*' do
     forward_request request, :get, params
   end
