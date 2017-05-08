@@ -26,7 +26,7 @@ end
 group :development do
   gem 'capistrano', '~> 3.0.1'
   gem 'capistrano-bundler'
-  gem 'capistrano-rvm'
+  gem 'capistrano-rbenv'
 
   gem 'shotgun'
 end
