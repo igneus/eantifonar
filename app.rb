@@ -133,7 +133,6 @@ class EAntifonarApp < Sinatra::Base
     # modify the response
     if html? body then
       orig_url = 'http://breviar.sk'+orig_request.path+'?'+::URI.encode_www_form(params)
-      STDERR.puts orig_url
       body = modify_page_content(body, orig_url)
     end
 
