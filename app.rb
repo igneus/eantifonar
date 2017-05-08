@@ -123,7 +123,7 @@ class EAntifonarApp < Sinatra::Base
       raise Sinatra::NotFound
     end
 
-    response = @proxy.handle_request method, orig_request, params
+    response = @proxy.handle_request method, orig_request, request.env['rack.request.query_hash']
     code, headers, body = response
 
     if code == 404 then
