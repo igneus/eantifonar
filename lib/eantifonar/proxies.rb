@@ -5,7 +5,7 @@ require 'typhoeus'
 module EAntifonar
 
   # Proxy provides an interface to obtain content from
-  # an external service - website ebreviar.cz
+  # an external service
   class HTTPProxy
 
     def initialize(config={})
@@ -25,7 +25,7 @@ module EAntifonar
       else
         request_options[:params] = params
       end
-      request = Typhoeus::Request.new(@site + "/" + orig_request.path, request_options)
+      request = Typhoeus::Request.new(@site + orig_request.path, request_options)
       request.run
 
       forwarded_response = [request.response.code, request.response.headers, request.response.body]
