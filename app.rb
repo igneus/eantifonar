@@ -23,7 +23,7 @@ class EAntifonarApp < Sinatra::Base
 
     # absolute links to these domains will be modified
     @wrapped_domains = {}
-    ['breviar.sk', 'ebreviar.cz'].each do |d|
+    ['lh.kbs.sk', 'breviar.cz'].each do |d|
       full = 'http://'+d
       @wrapped_domains[d] = {:full => full, :regex => Regexp.new('^'+full+'/*')}
     end
@@ -32,7 +32,7 @@ class EAntifonarApp < Sinatra::Base
     decorator_logger = Log4r::Logger['decorator']
     @decorator = Decorator.new decorator_logger, self.class.development?
 
-    @proxy = HTTPProxy.new site: 'breviar.sk'
+    @proxy = HTTPProxy.new site: 'https://lh.kbs.sk'
   end
 
   Encoding.default_external = 'UTF-8' if "1.9".respond_to?(:encoding)
