@@ -43,29 +43,31 @@ module EAntifonar
       occurrence1 = occurrence2 = nil
       psalms = []
 
-      return @doc.xpath("//p/span[@class='red'][1]").each_with_index do |span,ant_i|
-        if span.text.downcase.include? 'ant' then
-          p = span.parent
-          if ant_i % 2 == 0 then # we start with 0
-            occurrence1 = p
+      ant_i = -1
+      @doc.xpath("//p/span[@class='red'][1]").each do |span|
+        next unless span.text.downcase.include? 'ant'
 
-            pre = occurrence1
-            while pre.next.name == 'div' and pre.next['class'] == 'psalm'
-              psalms << pre.next
-              pre = pre.next
-            end
-          else
-            occurrence2 = p
+        ant_i += 1
+        p = span.parent
+        if ant_i % 2 == 0 then # we start with 0
+          occurrence1 = p
 
-            if @crash && antiphon_text(occurrence1) != antiphon_text(occurrence2) then
-              raise RuntimeError.new("A pair of non-matching antiphons found '#{occurrence1.text}', '#{occurrence2.text}'")
-            end
-
-            yield occurrence1, occurrence2, psalms
-
-            occurrence1 = occurrence2 = nil
-            psalms = []
+          pre = occurrence1
+          while pre.next.name == 'div' and pre.next['class'] == 'psalm'
+            psalms << pre.next
+            pre = pre.next
           end
+        else
+          occurrence2 = p
+
+          if @crash && antiphon_text(occurrence1) != antiphon_text(occurrence2) then
+            raise RuntimeError.new("A pair of non-matching antiphons found '#{occurrence1.text}', '#{occurrence2.text}'")
+          end
+
+          yield occurrence1, occurrence2, psalms
+
+          occurrence1 = occurrence2 = nil
+          psalms = []
         end
       end
     end
