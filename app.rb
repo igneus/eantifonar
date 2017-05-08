@@ -59,7 +59,7 @@ class EAntifonarApp < Sinatra::Base
   ## forwarded routes
 
   get '/' do
-    redirect '/cgi-bin/l.cgi?qt=pdnes&amp;j=cz&amp;c=cz', 302
+    redirect '/cgi-bin/l.cgi?qt=pdnes&j=cz&c=cz', 302
   end
 
   get '/robots.txt' do
