@@ -89,7 +89,7 @@ class EAntifonarApp < Sinatra::Base
   def static_content(request)
     local_path = File.join('public', request.path)
     unless File.exist?(local_path) # TODO: unsafe!
-      return forward_request(request, request.method, params)
+      return forward_request(request, request.request_method, params)
     end
 
     content = File.read(local_path)
